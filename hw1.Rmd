@@ -1,14 +1,22 @@
 ---
-title: "stats315_hw1"
+title: "Stats 315 Homework 1"
 output: html_document
 ---
 
-### Problem 1:
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = FALSE)
+
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(rpart)
+```
+
+# Problem 1:
 
 ```{r}
-#install.packages('rpart')
-setwd("~/Classes/Stat315B/hw1")
-library(rpart)
+# install.packages('rpart')
+# setwd("~/Classes/Stat315B/hw1")
 age <- read.csv("age_stats315B.csv")
 
 #Factors
@@ -60,17 +68,20 @@ if(age_categories[round(age$age)] == age_categories[round(preds)]){
 plot(model)
 ```
 
-###Write a short report about the relation between the age and the other demographic predictors as obtained from the RPART output
+**Write a short report about the relation between the age and the other demographic predictors as obtained from the RPART output**
 
-####The optimal tree found has a total of 7 splits, and obtains an error of 33% on the training data. Variables in order of their predictive power: Marital Status, Occupation, householder status, dual income status, income, education level, number of persons in the household under 18, Type of Home, and number of persons in the household.
+The optimal tree found has a total of 7 splits, and obtains an error of 33% on the training data. Variables in order of their predictive power: Marital Status, Occupation, householder status, dual income status, income, education level, number of persons in the household under 18, Type of Home, and number of persons in the household.
 
-###(a) Were surrogate splits used in the construction of the optimal tree you obtained? What does a surrogate split mean? Give an example of a surrogate split from your optimal decision tree. Which variable is the split on? Which variable(s) is the surrogate split on?
+## (a) 
+**Were surrogate splits used in the construction of the optimal tree you obtained? What does a surrogate split mean? Give an example of a surrogate split from your optimal decision tree. Which variable is the split on? Which variable(s) is the surrogate split on?**
 
 
-###(b) Using your optimal decision tree, predict your age.
+## (b) 
+**Using your optimal decision tree, predict your age.**
 
 ```{r}
-house <- read.csv("~/Classes/STAT315B/hw1/housetype_stats315B.csv")
+# house <- read.csv("~/Classes/STAT315B/hw1/housetype_stats315B.csv")
+house <- read.csv("housetype_stats315B.csv")
 
 train_ind <- sample(1:nrow(house), size = nrow(house) * .9)
 test_ind <- seq(1,nrow(house))[!(seq(1,nrow(house)) %in% train_ind)]
@@ -100,26 +111,37 @@ print(paste("Testing error", err))
 
 plot(model)
 ```
-###Misclassification Error Estimate: 25%
+**Misclassification Error Estimate: 25%**
 
-###Where di nodes 8-11 go?
+###Where did nodes 8-11 go?
 What's being split on each time?
 Why is the complexity parameter changing?
 
-###Problem 3: What are the two main reasons why a model that accurately describes the data usedto build it, may not do a good job describing future data?
-#### 1. Data obtained in the future may be from a different distribution as that from the past (training data). For instance, if training data on stock prices was taken from 1950, it would make very bad predictions on 2010 stock data because industry emphases have changed. 2. The model may have overfit to the data used to build it, so while it can perform well on that specific data, it cannot generalize to different inputs in the same range.
+# Problem 2: 
 
-### Problem 4 Why can't the prediction function be chosen from the class of all possible functions?
-#### While the optimal function chosen from the class of all possible functions would theoretically have 0 bias, it is impossible to actually pick the best function computationally, and the variance of selecting from this large of a function class would be astronomical
+# Problem 3: 
+**What are the two main reasons why a model that accurately describes the data usedto build it, may not do a good job describing future data?**
 
-### 5 Whatisthedefinitionofthetargetfunctionforagivenproblem?Isitalwaysan)accuratefunctionforprediction? Why/whynot?
-#### The target function for a given problem is that function, out of the class of all possible functions, that minimizes the prediction risk. It's not always an accurate function for prediction, especially if there is no association between the inputs and the desired output quantity.
+ - 1. Data obtained in the future may be from a different distribution as that from the past (training data). For instance, if training data on stock prices was taken from 1950, it would make very bad predictions on 2010 stock data because industry emphases have changed. 
+ - 2. The model may have overfit to the data used to build it, so while it can perform well on that specific data, it cannot generalize to different inputs in the same range.
 
-### 6 Is the empirical risk evaluated on the training data always the best surrogate for the actual(population) prediction risk? Why/why not? In what settings would it be expected to be good?
-#### NO. 1. The training data might not match the population distribution, in which case empirical training risk would be a terrible surrogate. If the population and training distributions match, it may still be a bad representation if your algorithm has overfit the training data.
+# Problem 4: 
+**Why can't the prediction function be chosen from the class of all possible functions?**
 
-###7. 
-####Misclassification risk is defined as $E_{yx}L(y, c(x))$, or the expectation over y and x of the loss incurred from predicting c(x) when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y != c(x)) = mean(I(y != c(x)))$ which is equivalent to the classification error rate!
+While the optimal function chosen from the class of all possible functions would theoretically have 0 bias, it is impossible to actually pick the best function computationally, and the variance of selecting from this large of a function class would be astronomical
+
+# Problem 5:
+**What is the definition of the target function for a given problem? I s it always an accurate function for prediction? Why/why not?**
+
+The target function for a given problem is that function, out of the class of all possible functions, that minimizes the prediction risk. It's not always an accurate function for prediction, especially if there is no association between the inputs and the desired output quantity.
+
+# Problem 6:
+**Is the empirical risk evaluated on the training data always the best surrogate for the actual(population) prediction risk? Why/why not? In what settings would it be expected to be good?**
+NO. 
+- 1. The training data might not match the population distribution, in which case empirical training risk would be a terrible surrogate. If the population and training distributions match, it may still be a bad representation if your algorithm has overfit the training data.
+
+# Problem 7: 
+Misclassification risk is defined as $E_{yx}L(y, c(x))$, or the expectation over y and x of the loss incurred from predicting c(x) when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y != c(x)) = mean(I(y != c(x)))$ which is equivalent to the classification error rate!
 
 #### General Bayes decision rule for unequal costs:
 $min_{k \in {1...K}} R(c_k | x)$ where
@@ -128,19 +150,26 @@ $L_{kl}$ is the loss incurred from predicting class k when the true class is l
 In our case, $L_{kl} = I(k != l)$
 This means that we predict that class k that gives us a minimum risk $P(c_l | x) * I(k != l)$. This will give us the class that matches the highest probability class given x.
 
-###8. We use our Bayes decision rule as a classifier, using estimated probabilities for $P(c_l | x)$ and predicting the k that gives us the lowest risk. We get a low error rate on our predicted classes (think low test error). Does this imply accurate estimates of $P(c_l | x)$?
+# Problem 8:
+**We use our Bayes decision rule as a classifier, using estimated probabilities for $P(c_l | x)$ and predicting the k that gives us the lowest risk. We get a low error rate on our predicted classes (think low test error). Does this imply accurate estimates of $P(c_l | x)$?**
 No
-1. Imagine we knew we had unbalanced datasets. We could do a very bad job of predicting the probabilities of each class, however, we could skew the loss in such a way that the risk for the correct class was lower, even though the probability of the correct class was also low, because the penalty for misclassification of THAT class was high. 
-2. During the task of classification, you lose information. Imagining a two class classification problem with 0-1 loss, you could construct a situation where your classifier obtains 0 classification error on a test set, but predicts every probability at ~49% off from it's actual value. 
+- 1. Imagine we knew we had unbalanced datasets. We could do a very bad job of predicting the probabilities of each class, however, we could skew the loss in such a way that the risk for the correct class was lower, even though the probability of the correct class was also low, because the penalty for misclassification of THAT class was high. 
+- 2. During the task of classification, you lose information. Imagining a two class classification problem with 0-1 loss, you could construct a situation where your classifier obtains 0 classification error on a test set, but predicts every probability at ~49% off from it's actual value. 
 
 
-###9 Explain the bias-variance trade-off.
-#### The term bias-variance trade-off encompasses the idea that selecting a function from a larger class of possible functions will likely result in a function that is closer to the target (less bias), however, because you chose from a larger pool, the function you get from using a slightly different training set can vary a lot (more variance). A lot of variation per training set means that your model will not be as generalizable to other datasets.
+# Problem 9: 
+**Explain the bias-variance trade-off.**
 
-###10. Why not choose surrogate splits to best predict the outcome variable y rather than the primary split.
-#### When you use surrogate splits, you lose information about the primary variable the algorithm wished to split on. You have only as much information as you have correlation between the surrogate and the primary variable.
+The term bias-variance trade-off encompasses the idea that selecting a function from a larger class of possible functions will likely result in a function that is closer to the target (less bias), however, because you chose from a larger pool, the function you get from using a slightly different training set can vary a lot (more variance). A lot of variation per training set means that your model will not be as generalizable to other datasets.
 
-###11. Value that minimizes the MSE is the mean:
+# Problem 10: 
+**Why not choose surrogate splits to best predict the outcome variable y rather than the primary split?**
+
+When you use surrogate splits, you lose information about the primary variable the algorithm wished to split on. You have only as much information as you have correlation between the surrogate and the primary variable.
+
+# Problem 11:
+
+Value that minimizes the MSE is the mean:
 \begin{aligned}
 \sum_{i=1}^N (y_i - F(x))^2
 \sum_{i=1}^N y_i^2 - 2y_iF(x) + F(x)^2
@@ -156,4 +185,66 @@ The value that minimizes the square risk criteria for a given region m, $c_m$, w
 \begin{aligned}
 c_m = \frac{ \sum_{i=1}^N y_i I(x_i \in R_m} { \sum_{i=1}^N I(x_i \in R_m)}
 \end{aligned}
+
+# Problem 12:
+
+###*Incomplete - writing down what I have, but this could be wrong/on the wrong track*
+
+The contribution of $R_m$ to the squared error loss is 
+
+$$\sum_{i:x_i \in R_m}\left[y_i - \bar{y}\right]^2$$
+So, naturally, the improvement in squared error loss is:
+\begin{align*}
+ &= \sum_{i:x_i \in R_m}\left[y_i - \bar{y}\right]^2 - \sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}_l\right]^2 - \sum_{i:x_i \in R_{m^r}}\left[y_i - \bar{y}_r\right]^2 \\
+ &= \sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_l\right]^2 + \sum_{i:x_i \in R_{m^r}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_r\right]^2
+\end{align*}
+
+Consider just the left sum:
+\begin{align*}
+\sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_l\right]^2 &= \sum_{i:x_i \in R_{m^l}}y_i^2 - 2\bar{y}y_i + \bar{y}^2 - y_i^2 + 2y_i\bar{y}_l - \bar{y}_l^2\\
+&= \sum_{i:x_i \in R_{m^l}} - 2\bar{y}y_i + \bar{y}^2 + 2y_i\bar{y}_l - \bar{y}_l^2 \\
+&= n_l\bar{y}^2 - n_l\bar{y}_l^2 - 2n_l\bar{y}\bar{y}_l +  n_l\bar{y}^2 \\
+&= n_l(\bar{y}-\bar{y_l})^2
+\end{align*}
+
+Applying the same logic to the right-hand sum, we find that the improvment is:
+
+$$n_l(\bar{y}-\bar{y_l})^2 + n_r(\bar{y}-\bar{y_r})^2$$
+
+# Problem 13:
+
+When a new number, $x_0$ is added to a set, the new mean $\bar{x}_{new}$ is:
+
+$$\bar{x}_{new} = \frac{n\bar{x}_{old} + x_0}{n + 1}$$
+
+Likewise removing an observation gives us:
+
+$$\bar{x}_{new} = \frac{n\bar{x}_{old} - x_0}{n - 1}$$
+
+Thus, we can use the following update rule when $y_i$ moves from the left to the right partition:
+$$\bar{y}_l \leftarrow \frac{n_l\bar{y}_{l} - y_i}{n_l - 1}$$
+
+$$\bar{y}_r \leftarrow \frac{n_r\bar{y}_{r} + y_i}{n_r + 1}$$
+$$n_l \leftarrow n_l - 1$$
+$$n_r \leftarrow n_r + 1$$
+
+Finally, we just recalculate the change in prediction risk:
+
+$$\frac{n_rn_l}{n}(\bar{y}_l - \bar{y}_r)^2$$
+
+# Problem 14:
+
+Increasing the size of the function class is not always a good idea, even if allows us to achieve a smaller training error.  There are two main reasons this might hurt:
+
+1. It may be more difficult to optimize over a larger class of functions.
+2. Although increasing the size of the function class often decreases bias, it tends to increase variance.  Inessence, even though the optimal $f$ within the larger function class may be closer to the target, our actual $\hat{f}$ after training may vary wildly depending on chance patterns in the training data.  This may cause our mse on future data to increase, rather than decrease.
+
+Likewise, decreasing the size of the function class is also not always the best path.  This may make the selection of $\hat{f}$ simpler and decrease the variance in the $\hat{f}$ we choose, but it may also introduce bias.  Inessense, we may be able to choose the optimum $f$ over a smaller function class more easily and consistently, but that optimum may be far from the target simply because the function class is small.
+
+In reality, we need to make decisions about our function class in order to balance bias and variance (and maintain feasibility).
+
+# Problem 15:
+
+
+# Problem 16:
 
