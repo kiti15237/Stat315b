@@ -12,6 +12,17 @@ library(knitr)
 library(rpart)
 ```
 
+# To Do
+
+- [ ] Problem 2 ??
+- [ ] Problem 7 (@Christine mostly).  I (RCA) *think* you were missing a sum in this answer, so I added it in.  Can you check the change and make sure the logic there still makes sense to you?
+- [ ] Problems 8 - 11: I (RCA) went through and fleshed out 1-7. Except for 2, they seem complete to me.  Would be good to do this for 8-11 too.
+- [ ] Problem 12
+- [ ] Problem 13: Can someone check my (RCA) answer?  This problem seemed too easy - my answer is just copied more-or-less verbatim from the notes...
+- [ ] Problem 15
+- [ ] Problem 16
+- [ ] delet this To Do list.
+
 # Problem 1:
 
 ```{r}
@@ -19,51 +30,32 @@ library(rpart)
 # setwd("~/Classes/Stat315B/hw1")
 age <- read.csv("age_stats315B.csv")
 
-#Factors
-#Occupation: 2
-#Type of Home: 3
-#Sex: 4
-#Marital Status: 5
-#Dual Incomes: 9
-#Householder Status:12
-#Ethnic classification: 13
-#Language at home: 14
+# Factors
+# Occupation: 2
+# Type of Home: 3
+# Sex: 4
+# Marital Status: 5
+# Dual Incomes: 9
+# Householder Status:12
+# Ethnic classification: 13
+# Language at home: 14
 factor_columns <- c(2,3,4,5,9,12,13,14)
 age[, factor_columns] <- apply(age[, factor_columns], 2, as.factor)
 
-#Ordinal: 
-#Education: 6
-#Anuual income: 7
-#How long in SF:8
-#Persons in household: 10
-#Person in household under 18: 11
+# Ordinal: 
+# Education: 6
+# Anuual income: 7
+# How long in SF:8
+# Persons in household: 10
+# Person in household under 18: 11
 ordinal_columns <- c(6, 7, 8, 10, 11)
 age[, ordinal_columns] <- apply(age[, ordinal_columns], 2, as.ordered)
 
-#Train model
+# Train model
 model <- rpart(age ~ ., data = age)
-#summary(model)
 
 age <- read.csv("age_stats315B.csv")
 me <- c(2, 6, 1, 2, 5, 5, 2, 5, 1, 4, 0, 3, 7, 1)
-
-#Steal datatypes
-age <- data.frame(rbind(age[1, ], me))
-age[, factor_columns] <- apply(age[, factor_columns], 2, as.factor)
-age[, ordinal_columns] <- apply(age[, ordinal_columns], 2, as.ordered)
-age <- age[2, ] # just include me
-
-preds <- predict(model, age[-1]) #exclude actual age
-
-age_categories <- c("17 and under", "18 thrus 24", "25 thru 34", "35 thru 44", "45 thru 54", "55 thru 64", "65 and Over")
-print("Actual Values")
-print(age_categories[round(age$age)])
-print("Predicted values")
-print(age_categories[round(preds)])
-
-if(age_categories[round(age$age)] == age_categories[round(preds)]){
-  print("That's correct!")
-}
 
 plot(model)
 ```
@@ -75,9 +67,34 @@ The optimal tree found has a total of 7 splits, and obtains an error of 33% on t
 ## (a) 
 **Were surrogate splits used in the construction of the optimal tree you obtained? What does a surrogate split mean? Give an example of a surrogate split from your optimal decision tree. Which variable is the split on? Which variable(s) is the surrogate split on?**
 
+Yes surrogate splits were used; `summary(model)` shows these surrogates (not shown).  Surrogate splits are used to handle missing values.  As a tree is constructed, surrogate splits are selected and stored alongside primary splits; these help decide whether an observation should fall into the right or left daughter node when the primary split variable is missing. Surrogate variables are selected at each node based on their agreement with the primary variable. In essence, a "good" surrogate split is one which would sort the data in a similar way to the primary split.  For example, the primary split at Node 2 of our tree is house status, but 92 observations at the node are missing that variable. Instead, these 92 are split based on `under 18`, which has 0.715 agreement with the primary split.
 
 ## (b) 
 **Using your optimal decision tree, predict your age.**
+
+```{r}
+# Steal datatypes
+myage <- data.frame(rbind(age[1, ], me))
+myage[, factor_columns] <- apply(myage[, factor_columns], 2, as.factor)
+myage[, ordinal_columns] <- apply(myage[, ordinal_columns], 2, as.ordered)
+myage <- myage[2, ] # just include me
+
+myage.preds <- predict(model, myage[-1]) # exclude actual age
+
+age_categories <- c("17 and under", "18 thru 24", "25 thru 34", "35 thru 44", "45 thru 54", "55 thru 64", "65 and Over")
+print("Actual Values")
+print(age_categories[round(myage$age)])
+print("Predicted values")
+print(age_categories[round(myage.preds)])
+
+if(age_categories[round(myage$age)] == age_categories[round(myage.preds)]){
+  print("That's correct!")
+}
+```
+
+The model correctly predicted that Christine was 18 through 24!
+
+# Problem 2: 
 
 ```{r}
 # house <- read.csv("~/Classes/STAT315B/hw1/housetype_stats315B.csv")
@@ -117,10 +134,8 @@ plot(model)
 What's being split on each time?
 Why is the complexity parameter changing?
 
-# Problem 2: 
-
 # Problem 3: 
-**What are the two main reasons why a model that accurately describes the data usedto build it, may not do a good job describing future data?**
+**What are the two main reasons why a model that accurately describes the data used to build it, may not do a good job describing future data?**
 
  - 1. Data obtained in the future may be from a different distribution as that from the past (training data). For instance, if training data on stock prices was taken from 1950, it would make very bad predictions on 2010 stock data because industry emphases have changed. 
  - 2. The model may have overfit to the data used to build it, so while it can perform well on that specific data, it cannot generalize to different inputs in the same range.
@@ -128,32 +143,38 @@ Why is the complexity parameter changing?
 # Problem 4: 
 **Why can't the prediction function be chosen from the class of all possible functions?**
 
-While the optimal function chosen from the class of all possible functions would theoretically have 0 bias, it is impossible to actually pick the best function computationally, and the variance of selecting from this large of a function class would be astronomical
+The optimal function chosen from the class of all possible functions would theoretically have 0 bias, which seems appealing. However, simply representing the class of all possible functions is a challenge, and choosing an optimum of a score criterion over such a massive space would be computationally impossible. Even if this problem were feasible, the variance in the optimal choice of function over this function class is likely to be astronomical.
 
 # Problem 5:
-**What is the definition of the target function for a given problem? I s it always an accurate function for prediction? Why/why not?**
+**What is the definition of the target function for a given problem? Is it always an accurate function for prediction? Why/why not?**
 
-The target function for a given problem is that function, out of the class of all possible functions, that minimizes the prediction risk. It's not always an accurate function for prediction, especially if there is no association between the inputs and the desired output quantity.
+The target function for a given problem is that function, out of the class of all possible functions, that minimizes the expected prediction risk, $E_{y, \vec{x}}\left[L(y, \vec{x})\right]$. It is not always an accurate function for prediction, especially if there is no association between the inputs and the desired output quantity.  For example, if we were trying to predict whether a patient will be diagnosed with cancer based on their favorite color, even the best possible predictive model for this problem formulation would still probably perform poorly.
 
 # Problem 6:
-**Is the empirical risk evaluated on the training data always the best surrogate for the actual(population) prediction risk? Why/why not? In what settings would it be expected to be good?**
-NO. 
-- 1. The training data might not match the population distribution, in which case empirical training risk would be a terrible surrogate. If the population and training distributions match, it may still be a bad representation if your algorithm has overfit the training data.
+**Is the empirical risk evaluated on the training data always the best surrogate for the actual (population) prediction risk? Why/why not? In what settings would it be expected to be good?**
+
+No. 
+- 1. If the training data does not match the population distribution, empirical training risk will likely strongly underestimate prediction risk. For instance, a model for predicting cancer status built on data from 1970 which excels on the training set may perform poorly if we apply it to modernday patients.
+- 2. Even if the training and testing data are drawn from the same distribution, empirical risk on the training data is still an underestimate of population risk.  This is because the training algorithm (more-or-less) specifically builds a model to minimize training empirical risk. Models which are fit too closely to chance fluctuations in the training data may have very low empirical risk (for example, a tree with the maximum number of splits), but very high population risk.  This is why overfitting is such an important problem.
 
 # Problem 7: 
-Misclassification risk is defined as $E_{yx}L(y, c(x))$, or the expectation over y and x of the loss incurred from predicting c(x) when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y != c(x)) = mean(I(y != c(x)))$ which is equivalent to the classification error rate!
+Misclassification risk is defined as $E_{yx}L(y, c(x))$, the expectation over y and x of the loss incurred from predicting $c(x)$ when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y != c(x)) = mean(I(y \neq c(x)))$ which is equivalent to the classification error rate!
 
-#### General Bayes decision rule for unequal costs:
-$min_{k \in {1...K}} R(c_k | x)$ where
-$R(c_k | x) = L_{kl} * P(c_l | x)$
-$L_{kl}$ is the loss incurred from predicting class k when the true class is l
-In our case, $L_{kl} = I(k != l)$
-This means that we predict that class k that gives us a minimum risk $P(c_l | x) * I(k != l)$. This will give us the class that matches the highest probability class given x.
+The general Bayes decision rule for unequal costs is:
+$$\hat{k} = min_{k \in {1...K}} R(c_k | x)$$ where
+$R(c_k | x) = \sum_{l = 1}^{K}L_{kl} P(y = c_l | x)$, and 
+$L_{kl}$ is the loss incurred from predicting class $k$ when the true class is $l$.
+In our case, $L_{kl} = I(k \neq l)$.
+
+In our case, since $L_{kl} = I(k \neq l)$, the risk of predicting $c_k$ is 
+$$\sum_{l \neq k} P(y = c_l | x).$$
+Inessence, this is just the probability that we are incorrect when we predict $c_k$.  This quantity is minimized when we choose the most probable label for $Y$ given $x$. Thus, our Bayes rule is:
+$$\hat{k} = max_{k \in {1...K}} P(y = c_k | x).$$
 
 # Problem 8:
 **We use our Bayes decision rule as a classifier, using estimated probabilities for $P(c_l | x)$ and predicting the k that gives us the lowest risk. We get a low error rate on our predicted classes (think low test error). Does this imply accurate estimates of $P(c_l | x)$?**
 No
-- 1. Imagine we knew we had unbalanced datasets. We could do a very bad job of predicting the probabilities of each class, however, we could skew the loss in such a way that the risk for the correct class was lower, even though the probability of the correct class was also low, because the penalty for misclassification of THAT class was high. 
+- 1. Imagine we knew we had unbalanced datasets. We could do a very bad job of predicting the probabilities of each class. However, we could skew the loss in such a way that the risk for the correct class was lower, even though the probability of the correct class was also low, because the penalty for misclassification of THAT class was high. 
 - 2. During the task of classification, you lose information. Imagining a two class classification problem with 0-1 loss, you could construct a situation where your classifier obtains 0 classification error on a test set, but predicts every probability at ~49% off from it's actual value. 
 
 
