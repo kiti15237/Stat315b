@@ -217,20 +217,69 @@ $$\sum_{i:x_i \in R_m}\left[y_i - \bar{y}\right]^2$$
 So, naturally, the improvement in squared error loss is:
 \begin{align*}
  &= \sum_{i:x_i \in R_m}\left[y_i - \bar{y}\right]^2 - \sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}_l\right]^2 - \sum_{i:x_i \in R_{m^r}}\left[y_i - \bar{y}_r\right]^2 \\
- &= \sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_l\right]^2 + \sum_{i:x_i \in R_{m^r}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_r\right]^2
-\end{align*}
+ \end{align*}
+ 
+ Expanding each of these three terms, we see that the sums of $y_i$ terms cancel each other out:
+ \begin{align*}
+ & = \sum_{i:x_i \in R_m}\left[y_i^2 - 2y_i \bar{y} + \bar{y}^2)\right] - \sum_{i:x_i \in R_{m^l}}\left[y_i^2 - 2y_i \bar{y}_l + \bar{y}_l^2)\right] - \sum_{i:x_i \in R_{m^r}}\left[y_i - 2y_i\bar{y}_r + \bar{y}_r^2 \right] \\
+  & = \sum_{i:x_i \in R_m}\left[- 2y_i \bar{y} + \bar{y}^2)\right] - \sum_{i:x_i \in R_{m^l}}\left[- 2y_i \bar{y}_l + \bar{y}_l^2)\right] - \sum_{i:x_i \in R_{m^r}}\left[- 2y_i\bar{y}_r + \bar{y}_r^2 \right] \\
+ \end{align*}
+ 
 
-Consider just the left sum:
+We now simplify each term independently:
+  \begin{align*}
+    \sum_{i:x_i \in R_m}\left[- 2y_i \bar{y} + \bar{y}^2)\right] &= -2\bar{y} \sum_{i:x_i \in R_m} y_i + n \bar{y}^2\\
+    &= -2 \bar{y} (n \bar{y}) + n \bar{y}^2\\
+    &= -n \bar{y}^2
+  \end{align*}
+  
+  \begin{align*}
+    \sum_{i:x_i \in R_l}\left[- 2y_i \bar{y}_l + \bar{y}_l^2)\right] &= -2\bar{y}_l \sum_{i:x_i \in R_m} y_i + n \bar{y}_l^2\\
+    &= -2 \bar{y}_l (n \bar{y}_l) + n \bar{y}_l^2\\
+    &= -n \bar{y}_l^2
+  \end{align*}
+  
+  \begin{align*}
+    \sum_{i:x_i \in R_l}\left[- 2y_i \bar{y}_r + \bar{y}_r^2)\right] &= -2\bar{y}_r \sum_{i:x_i \in R_m} y_i + n \bar{y}_r^2\\
+    &= -2 \bar{y}_r (n \bar{y}_r) + n \bar{y}_r^2\\
+    &= -n \bar{y}_r^2
+  \end{align*}
+
+The improvement in the squared error loss can now be expressed as:
+
+  \begin{align*}
+    -n \bar{y}^2 - (-n \bar{y}_l^2) - (-n \bar{y}_r^2)\\
+    -n \bar{y}^2 + n \bar{y}_l^2 + n \bar{y}_r^2
+  \end{align*}
+
+
+We now express $\bar{y}$ in terms of $y_l$ and $y_r$ 
+  \begin{align*}
+    \bar{y} = \frac{1}{n}(n_l \bar{y}_l + n_r \bar{y}_r)\\
+    \bar{y}^2 = \frac{1}{n^2}(n_l^2 \bar{y}_l^2 + 2 n_l n_r \bar{y}_l \bar{y}_r + n_r^2 \bar{y}_r^2)
+  \end{align*}
+  
+and substitute into our expression for the improvement
+  \begin{align*}
+    \frac{-1}{n}(n_l^2 \bar{y}_l^2 + 2 n_l n_r \bar{y}_l \bar{y}_r + n_r^2 \bar{y}_r^2)+ n \bar{y}_l^2 + n \bar{y}_r^2\\
+    \bar{y}_l^2(\frac{-n_l^2}{n} + n_l) + \bar{y}_r^2(\frac{-n_r^2}{n} + n_r) - 2 n_l n_r \bar{y}_l \bar{y}_r \\
+  \end{align*}
+  
+Lastly, we simplify $(\frac{-n_l^2}{n} + n_l)$. The same logic can be applied to $(\frac{-n_r^2}{n} + n_r)$
 \begin{align*}
-\sum_{i:x_i \in R_{m^l}}\left[y_i - \bar{y}\right]^2 - \left[y_i - \bar{y}_l\right]^2 &= \sum_{i:x_i \in R_{m^l}}y_i^2 - 2\bar{y}y_i + \bar{y}^2 - y_i^2 + 2y_i\bar{y}_l - \bar{y}_l^2\\
-&= \sum_{i:x_i \in R_{m^l}} - 2\bar{y}y_i + \bar{y}^2 + 2y_i\bar{y}_l - \bar{y}_l^2 \\
-&= n_l\bar{y}^2 - n_l\bar{y}_l^2 - 2n_l\bar{y}\bar{y}_l +  n_l\bar{y}^2 \\
-&= n_l(\bar{y}-\bar{y_l})^2
+(\frac{-n_l^2}{n} + n_l) &= n_l(1 - \frac{n_l}{n})\\
+& = n_l(\frac{n}{n} - \frac{n_l}{n})\\
+& = n_l(\frac{n_l + n_r}{n} - \frac{n_l}{n})\\
+& = n_l(\frac{n_r}{n})\\
+& = \frac{n_l n_r}{n}\\
 \end{align*}
 
-Applying the same logic to the right-hand sum, we find that the improvment is:
+And Substitute:
+  \begin{align*}
+    & \bar{y}_l^2(\frac{n_l n_r}{n}) + \bar{y}_r^2(\frac{n_l n_r}{n}) - 2 n_l n_r \bar{y}_l \bar{y}_r \\
+    & \frac{n_l n_r}{n}(\bar{y_l}^2 - \bar{y_r}^2)
+  \end{align*}
 
-$$n_l(\bar{y}-\bar{y_l})^2 + n_r(\bar{y}-\bar{y_r})^2$$
 
 # Problem 13:
 
