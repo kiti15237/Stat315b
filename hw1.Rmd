@@ -15,10 +15,11 @@ library(rpart)
 # To Do
 
 - [ ] Problem 2 ??
-- [ ] Problem 7 (@Christine mostly).  I (RCA) *think* you were missing a sum in this answer, so I added it in.  Can you check the change and make sure the logic there still makes sense to you?
+- [x] Problem 7 (@Christine mostly).  I (RCA) *think* you were missing a sum in this answer, so I added it in.  Can you check the change and make sure the logic there still makes sense to you? ---- Looks good to me! thanks
 - [ ] Problems 8 - 11: I (RCA) went through and fleshed out 1-7. Except for 2, they seem complete to me.  Would be good to do this for 8-11 too.
-- [ ] Problem 12
+- [x] Problem 12
 - [ ] Problem 13: Can someone check my (RCA) answer?  This problem seemed too easy - my answer is just copied more-or-less verbatim from the notes...
+Looks correct to me (CT), but you're right that it seems a bit simple
 - [ ] Problem 15
 - [ ] Problem 16
 - [ ] delet this To Do list.
