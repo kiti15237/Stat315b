@@ -55,10 +55,11 @@ age[, ordinal_columns] <- apply(age[, ordinal_columns], 2, as.ordered)
 # Train model
 model <- rpart(age ~ ., data = age)
 
-age <- read.csv("age_stats315B.csv")
+#age <- read.csv("age_stats315B.csv")
 me <- c(2, 6, 1, 2, 5, 5, 2, 5, 1, 4, 0, 3, 7, 1)
 
 plot(model)
+#text(model)
 ```
 
 **Write a short report about the relation between the age and the other demographic predictors as obtained from the RPART output**
@@ -138,7 +139,7 @@ Why is the complexity parameter changing?
 # Problem 3: 
 **What are the two main reasons why a model that accurately describes the data used to build it, may not do a good job describing future data?**
 
- - 1. Data obtained in the future may be from a different distribution as that from the past (training data). For instance, if training data on stock prices was taken from 1950, it would make very bad predictions on 2010 stock data because industry emphases have changed. 
+ - 1. Data obtained in the future may be from a different distribution as that from the past (training data). For instance, if training data on stock prices was taken from 1950, it would make very bad predictions on 2010 stock data because industry emphases have changed. This phenomenon is known as concept drift. 
  - 2. The model may have overfit to the data used to build it, so while it can perform well on that specific data, it cannot generalize to different inputs in the same range.
 
 # Problem 4: 
@@ -159,7 +160,7 @@ No.
 - 2. Even if the training and testing data are drawn from the same distribution, empirical risk on the training data is still an underestimate of population risk.  This is because the training algorithm (more-or-less) specifically builds a model to minimize training empirical risk. Models which are fit too closely to chance fluctuations in the training data may have very low empirical risk (for example, a tree with the maximum number of splits), but very high population risk.  This is why overfitting is such an important problem.
 
 # Problem 7: 
-Misclassification risk is defined as $E_{yx}L(y, c(x))$, the expectation over y and x of the loss incurred from predicting $c(x)$ when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y != c(x)) = mean(I(y \neq c(x)))$ which is equivalent to the classification error rate!
+Misclassification risk is defined as $E_{yx}L(y, c(x))$, the expectation over y and x of the loss incurred from predicting $c(x)$ when the answer was y. In our case, that loss is simply an indicator function that is 0 when the classifications are the same and 0 otherwise. $E_{yx}I(y \neq c(x)) = mean(I(y \neq c(x)))$ which is equivalent to the classification error rate!
 
 The general Bayes decision rule for unequal costs is:
 $$\hat{k} = min_{k \in {1...K}} R(c_k | x)$$ where
@@ -169,7 +170,7 @@ In our case, $L_{kl} = I(k \neq l)$.
 
 In our case, since $L_{kl} = I(k \neq l)$, the risk of predicting $c_k$ is 
 $$\sum_{l \neq k} P(y = c_l | x).$$
-Inessence, this is just the probability that we are incorrect when we predict $c_k$.  This quantity is minimized when we choose the most probable label for $Y$ given $x$. Thus, our Bayes rule is:
+In essence, this is just the probability that we are incorrect when we predict $c_k$.  This quantity is minimized when we choose the most probable label for $Y$ given $x$. Thus, our Bayes rule is:
 $$\hat{k} = max_{k \in {1...K}} P(y = c_k | x).$$
 
 # Problem 8:
@@ -193,13 +194,13 @@ When you use surrogate splits, you lose information about the primary variable t
 
 Value that minimizes the MSE is the mean:
 \begin{aligned}
-\sum_{i=1}^N (y_i - F(x))^2
-\sum_{i=1}^N y_i^2 - 2y_iF(x) + F(x)^2
+&\sum_{i=1}^N (y_i - F(x))^2  = \\
+&\sum_{i=1}^N y_i^2 - 2y_iF(x) + F(x)^2
 \end{aligned}
 Taking the derivative with respect to $F(x)$ and set equal to 0. Then solve for F(x)
 \begin{aligned}
-0 - 2 \sum_{i=1}^N y_i + 2 \sum_{i=1}^N F(x) = 0
-F(x) = \frac{\sum_{i=1}^N y_i}{n}
+0 - 2 \sum_{i=1}^N y_i + 2 \sum_{i=1}^N F(x) &= 0 \\
+F(x) &= \frac{\sum_{i=1}^N y_i}{n}
 \end{aligned}
 We see that the value of F(x) that minimizes the MSE is the mean of the y values in the set $i \in {examples}$
 
@@ -308,7 +309,7 @@ $$\frac{n_rn_l}{n}(\bar{y}_l - \bar{y}_r)^2$$
 Increasing the size of the function class is not always a good idea, even if allows us to achieve a smaller training error.  There are two main reasons this might hurt:
 
 1. It may be more difficult to optimize over a larger class of functions.
-2. Although increasing the size of the function class often decreases bias, it tends to increase variance.  Inessence, even though the optimal $f$ within the larger function class may be closer to the target, our actual $\hat{f}$ after training may vary wildly depending on chance patterns in the training data.  This may cause our mse on future data to increase, rather than decrease.
+2. Although increasing the size of the function class often decreases bias, it tends to increase variance. In essence, even though the optimal $f$ within the larger function class may be closer to the target, our actual $\hat{f}$ after training may vary wildly depending on chance patterns in the training data.  This may cause our mse on future data to increase, rather than decrease.
 
 Likewise, decreasing the size of the function class is also not always the best path.  This may make the selection of $\hat{f}$ simpler and decrease the variance in the $\hat{f}$ we choose, but it may also introduce bias.  Inessense, we may be able to choose the optimum $f$ over a smaller function class more easily and consistently, but that optimum may be far from the target simply because the function class is small.
 
@@ -316,6 +317,21 @@ In reality, we need to make decisions about our function class in order to balan
 
 # Problem 15:
 
+Advantages: 
+1. By splitting in a way with higher resolution (more than just in a binary way), likely one will be able to achieve improved accuracy on the training data.
+2. Enabling more splits per node at a variable right away may be easier/more effective than downstream splitting on different variables. For example if the dataset has one predictor variable completely correllated with the outcome and the predictor variable takes on values in $n > 2$ different intervals, then splitting on that variable in more than a binary way immediately achieves perfect accurcacy.
+
+Disadvantages:
+1. If the number of splits at a node is not prespecified, this may greatly increases the computational burden of splitting and recursive searching, and if the we require $k > 2$ splits per node, this may induce redundancy as maybe a binary split was sufficient for making a decision over a specific variable. 
+2. Allowing for a greater number of splits per node reduces the number of data points available at each child tree, so having more splits may lead to overfitting in the end.
+
 
 # Problem 16:
+Advantages:
+The primary advantage in this case is that by having linear combination splits, we would almost certainly increase accuracy in our trees. Especially since a major disadvantage of regression trees is that we're restricted to piecewise continuous functions, enabling piecewise linear splitting might greatly increase accuracy especially in regions with a larger range or variance of output values.
 
+Disadvantages:
+1. Inevitably, this strategy would induce a greater computational burden in calculating optimal separating hyperplanes.
+2. This strategy might lead to overfitting of the data if we don't regularize the procedure somehow.
+3. Because the space of functions we're considering (piecewise linear, which is a superset of piecewise constant), the variance of our estimate will increase, so we're more vulnerable to biases in our dataset.
+4. Perhaps the greatest cost is that our predictions become much less naturally interpretable. Instead of having a set of statements about where each variable in certain intervals or categories as a way to make predictions, we instead have sets of statements about how linear combinations of variables fall into one half-space or another, which is much less obviously interpretable than in the simple splits case.
