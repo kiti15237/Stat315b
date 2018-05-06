@@ -1,6 +1,8 @@
 ---
 title: "Stats 315 Homework 1"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,25 +12,12 @@ library(ggplot2)
 library(dplyr)
 library(knitr)
 library(rpart)
+library(rpart.plot)
 ```
-
-# To Do
-
-- [ ] Problem 2 ??
-- [x] Problem 7 (@Christine mostly).  I (RCA) *think* you were missing a sum in this answer, so I added it in.  Can you check the change and make sure the logic there still makes sense to you? ---- Looks good to me! thanks
-- [ ] Problems 8 - 11: I (RCA) went through and fleshed out 1-7. Except for 2, they seem complete to me.  Would be good to do this for 8-11 too.
-- [x] Problem 12
-- [ ] Problem 13: Can someone check my (RCA) answer?  This problem seemed too easy - my answer is just copied more-or-less verbatim from the notes...
-Looks correct to me (CT), but you're right that it seems a bit simple
-- [ ] Problem 15
-- [ ] Problem 16
-- [ ] delet this To Do list.
 
 # Problem 1:
 
 ```{r}
-# install.packages('rpart')
-# setwd("~/Classes/Stat315B/hw1")
 age <- read.csv("age_stats315B.csv")
 
 # Factors
@@ -58,18 +47,19 @@ model <- rpart(age ~ ., data = age)
 #age <- read.csv("age_stats315B.csv")
 me <- c(2, 6, 1, 2, 5, 5, 2, 5, 1, 4, 0, 3, 7, 1)
 
-plot(model)
-#text(model)
+rpart.plot(model)
 ```
 
 **Write a short report about the relation between the age and the other demographic predictors as obtained from the RPART output**
 
-The optimal tree found has a total of 7 splits, and obtains an error of 33% on the training data. Variables in order of their predictive power: Marital Status, Occupation, householder status, dual income status, income, education level, number of persons in the household under 18, Type of Home, and number of persons in the household.
+The optimal tree found has a total of 7 splits, and obtains an error of 33% on the training data. Variables in order of their predictive power: Marital Status, Occupation, householder status, dual income status, income, education level, number of persons in the household under 18, Type of Home, and number of persons in the household.  
+
+The primary split divides the observations between "married, widowed, or separated" (right branch) and "never married" (left branch).  The unmarried people are sorted by whether they live with their parents, whether they have finished only early education, and whether they are retired.  Contrastingly, the married people are considered based on their retirement status, their housing status and the number of people in their household under 18 (presumably kids).
 
 ## (a) 
 **Were surrogate splits used in the construction of the optimal tree you obtained? What does a surrogate split mean? Give an example of a surrogate split from your optimal decision tree. Which variable is the split on? Which variable(s) is the surrogate split on?**
 
-Yes surrogate splits were used; `summary(model)` shows these surrogates (not shown).  Surrogate splits are used to handle missing values.  As a tree is constructed, surrogate splits are selected and stored alongside primary splits; these help decide whether an observation should fall into the right or left daughter node when the primary split variable is missing. Surrogate variables are selected at each node based on their agreement with the primary variable. In essence, a "good" surrogate split is one which would sort the data in a similar way to the primary split.  For example, the primary split at Node 2 of our tree is house status, but 92 observations at the node are missing that variable. Instead, these 92 are split based on `under 18`, which has 0.715 agreement with the primary split.
+Yes surrogate splits were used; `summary(model)` shows these surrogates (not shown).  Surrogate splits are used to handle missing values.  As a tree is constructed, surrogate splits are selected and stored alongside primary splits; these help decide whether an observation should fall into the right or left daughter node when the primary split variable is missing. Surrogate variables are selected at each node based on their agreement with the primary variable. In essence, a "good" surrogate split is one which would sort the data in a similar way to the primary split.  For example, the primary split at Node 2 of our tree is housing status, but 92 observations at the node are missing that variable. Instead, these 92 are split based on `under 18`, which has 0.715 agreement with the primary split.
 
 ## (b) 
 **Using your optimal decision tree, predict your age.**
@@ -99,7 +89,6 @@ The model correctly predicted that Christine was 18 through 24!
 # Problem 2: 
 
 ```{r}
-# house <- read.csv("~/Classes/STAT315B/hw1/housetype_stats315B.csv")
 house <- read.csv("housetype_stats315B.csv")
 
 train_ind <- sample(1:nrow(house), size = nrow(house) * .9)
@@ -128,13 +117,16 @@ err <- sum(preds != house_test[,1])/ length(preds)
 print(paste("Training error", err_train))
 print(paste("Testing error", err))
 
-plot(model)
+rpart.plot(model)
 ```
 **Misclassification Error Estimate: 25%**
 
-###Where did nodes 8-11 go?
-What's being split on each time?
-Why is the complexity parameter changing?
+Interestingly, even though the outcome we are trying to predict has five possible values, the tree only ever predicts class 1 (house) or 3 (apartment).  If we examine the trees leaf nodes, we can see that the majority class in any lead is never 2,4, or 5.  This is probably because these classes are under-represented in the dataset as a whole (see below).  As a result, the optimal tree minimizes empirical loss simply by training a classification scheme for types 1 and 3, and never predicting the minority classes.
+
+```{r}
+hist(as.numeric(house$TypeHome), main = NULL, xlab = "House Type Label")
+```
+
 
 # Problem 3: 
 **What are the two main reasons why a model that accurately describes the data used to build it, may not do a good job describing future data?**
@@ -193,21 +185,21 @@ When you use surrogate splits, you lose information about the primary variable t
 # Problem 11:
 
 Value that minimizes the MSE is the mean:
-\begin{aligned}
+\begin{align}
 &\sum_{i=1}^N (y_i - F(x))^2  = \\
 &\sum_{i=1}^N y_i^2 - 2y_iF(x) + F(x)^2
-\end{aligned}
+\end{align}
 Taking the derivative with respect to $F(x)$ and set equal to 0. Then solve for F(x)
-\begin{aligned}
+\begin{align}
 0 - 2 \sum_{i=1}^N y_i + 2 \sum_{i=1}^N F(x) &= 0 \\
 F(x) &= \frac{\sum_{i=1}^N y_i}{n}
-\end{aligned}
+\end{align}
 We see that the value of F(x) that minimizes the MSE is the mean of the y values in the set $i \in {examples}$
 
 The value that minimizes the square risk criteria for a given region m, $c_m$, will naturally be the mean of the y values that fall within that region. This can be expressed as:
-\begin{aligned}
+\begin{align}
 c_m = \frac{ \sum_{i=1}^N y_i I(x_i \in R_m} { \sum_{i=1}^N I(x_i \in R_m)}
-\end{aligned}
+\end{align}
 
 # Problem 12:
 
