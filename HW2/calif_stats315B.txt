@@ -1,0 +1,32 @@
+A) Title:  California Data
+
+
+B) Relevant Information:
+
+The original data  the STATLIB repository. It consists of
+aggregated data from each of 20,460 neighborhoods (1990 census block
+groups) in California.
+
+california.data is obtained from the original database. Information about
+various attributes is provided below:
+
+C) The goal is to predict the Median House Value the  8 attributes listed
+in D.
+
+
+D) Attribute Information.
+
+The response appears in column 1 of california.data and consists in the
+median house value, measured in units of $100,000
+
+In columns 2-9 are listed (in the  order described below) the attributes:
+
+-Median Income
+-Housing Median Age
+-Average No Rooms
+-Average No  Bedrooms
+-Population
+-Average Occupancy
+-Latitude
+-Longitude
+

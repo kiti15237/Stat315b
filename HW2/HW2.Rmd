@@ -1,0 +1,78 @@
+---
+title: "STATS 315B - Homework 2"
+author: "Rachael Caelie “Rocky” Aikens, Christine Tartaru, and Daniel Sosa"
+date: "May 14, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(ggplot2)
+library(dplyr)
+library(knitr)
+```
+
+## TODO:
+-[ ] 1 - I (RCA) put down some thoughts, but I don't remember when this actually came up in class.  Anyone else have ideas?
+- [ ] 2-9
+
+# Problem 1:
+**(10) Random forests predict with an ensemble of bagged trees each trained on a bootstrap sample randomly drawn from the original training data. Additional random variation among the trees is induced by choosing the variable for each split from a small randomly chosen subset of all of the predictor variables when building each tree. What are the advantages and disadvantages of this random variable selection strategy? How can one introduce additional tree variation in the forest without randomly selecting subsets of variables?**
+
+*Advantages:*  The random variable selection strategy introduces variation among the trees by ensuring that they are not all splitting on the same sequence of variables.  This enforces that the trees that result must truly be different, since averaging a forest of near-identical trees adds little value when it comes to decreasing the variance of the overall classifier.
+
+*Disadvantages:* Suppose (as is very often the case), that many of the model variables are uninformative for prediction.  In this case, the random variable selection strategy is likely to generate many trees which have splits on relatively useless variables.
+
+Additional variation can be induced by:
+ - limiting the sample sizes from which each base learner is trained.
+ - 
+
+# Problem 2:
+**(5) Why is it necessary to use regularization in linear regression when the number of predictor variables is greater than the number of observations in the training sample? Explain how regularization helps in this case. Are there other situations where regularization might help? What is the potential disadvantage of introducing regularization? Why is sparsity a reasonable assumption in the boosting context. Is it always? If not, why not?**
+
+# Problem 3:
+**(15) LetˆR(a) =1NN∑i=1(yi−a0−n∑j=1ajxij)2 be the empirical risk in a linear regression problem. Show that the convex members of the powerfamily of penalties, except for the lasso,Pγ(a) =n∑j=1|aj|γ(γ >1)have the property that solutions toˆa(λ) = argminaˆR(a)+λ·Pγ(a)have nonzero values for all coefficients at each path point indexed byλ. By contrast the convexmembers of the elastic net (except ridge)Pγ(a) =n∑j=1(γ−1)a2j/2+(2−γ)|aj|(1≤γ <2)1
+can produce solutions with many zero valued coefficients at various path points.**
+
+# Problem 4:
+**(10) Consider an outcome variableyand predictor variables{xj}Jj=1withE[xj] = 0andE[x2j] = 1for allx. Show that the variablexj∗that has the maximum absolute correlation withyj∗= arg max1≤j≤J|E(y·xj)|is the same as the one that best predictsyusing squared—error lossj∗= arg min1≤j≤JminρE[y−ρ·xj]2.This shows that the base learner most correlated with the generalized residual is the one thatbest predicts it with squared—error loss.**
+
+# Problem 5:
+**(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andz\lthe complement subsetzl∪z\l=x. Show that if a functionF(x)is additive inzlandz\lF(x) =Fl(zl)+F\l(z\l)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant.  This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz\l.  Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz\l. Under what conditions would the two be the same?For this homework, as in Homework 1, you will be using the R. The rest of this homeworkinvolves becoming familiar with the R package gbm (gradientboosting machine).  Gradientboosting is covered in Sections 10.8 — 10.14.3 of the text. Further information can be found inthe papers:Greedy function approximation:  a gradient boosting machineandStochastic gradientboosting. Both of these papers are available athttp://www-stat.stanford.edu/~jhf/#reports.The first step is to install the gbm package with the R command:install.packages("gbm")and follow the instructions.  This requires an internet connection.  It need be done only onceat the first R session. Next the package must be loaded with theR commandlibrary(gbm).This must be done in every R session before using any gbm procedures. The R documentationfor gbmPackage ‘gbm’(gbm_doc.pdf), a guide (gbm_guide.pdf) and a tutorialBoosting withR Programming(gbm_tutorial.pdf )are posted in the class canvas web site. Study the tutorial(gbm_tutorial.pdf) carefully as it describes the necessary information to perform the homework.The data setsspam_stats315B.csv,age_stats315B.csv,calif_stats315B.csvandoccup_stats315B.csvalong with documentation filesage_stats315B.txt,spam_stats315B_info.txt,spam_stats315B_names.txt,calif_stats315B.txtcan be found in the class canvas web page. Note that the results from thecomputational problems may not look exactly like the ones inthe textbook due to plottingoptions and slight possible differences in the data sets used.**
+
+# Problem 6: 
+**(15) Binary classification: Spam Email.The data set for this problem isspam_stats315B.csv,with documentation filesspam_stats315B_info.txtandspam_stats315B_names,txt. The dataset is a collection of 4601 emails of which 1813 were considered spam, i.e. unsolicited commercialemail. The data set consists of 58 attributes of which 57 are continuous predictors and one is a
+class label that indicates whether the email was consideredspam (1) or not (0). Among the 57predictor attributes are: percentage of the word  “free” in the email, percentage of exclamationmarks in the email, etc. See filespam_stats315B_names.txtfor the full list of attributes. Thegoal is, of course, to predict whether or not an email is “spam”. This data set is used for illus-tration in the tutorialBoosting with R Programming. The data setspam_stats315B_train.csvrepresents a subsample of these emails randomly selected fromspam_stats315B.csvto be usedfor training.  The filespam_stats315B_test.csvcontains the remaining emails to be used forevaluating results.**
+
+**(a) Based on the training data, fit a gbm model for predicting whether or not an emailis“spam”, following the example in the tutorial. What is your estimate of the misclassificationrate?  Of all the spam emails of the test set what percentage was misclassified, and of all thenon-spam emails in the test set what percentage was misclassified?**
+
+**(b) Your classifier in part (a) can be used as a spam filter. One of the possible disadvantagesof such a spam filter is that it might filter out too many good (non-spam) emails. Therefore, abetter spam filter might be the one that penalizes misclassifying non-spam emails more heavilythan the spam ones. Suppose that you want to build a spam filterthat  “throws out” no morethat 0.3% of the good (non-spam) emails. You have to find and use a cost matrix that penalizesmisclassifying “good” emails as“spam” more than misclassifying “spam” emails as “good” by themethod of trial and error. Once you have constructed your final spam filter with the propertydescribed above, answer the following questions:**
+
+*(i) What is the overall misclassification error of your final filter and what is the percentageof good emails and spam emails that were misclassified respectively?*
+
+*(ii) What are the important variables in discriminating good emails from spam for your spamfilter?*
+
+*(iii) Using the interpreting tools provided by gbm, describe the dependence of the responseon the most important attributes.*
+
+# Problem 7:
+**(15)Regression: California Housing.The data setcalif_stats315B.csvconsists of ag-gregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described incalif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least**
+
+**(a) The prediction accuracy of gbm on the data set.**
+
+**(b) Identification of the most important variables.**
+
+**(c) Comments on the dependence of the response on the most important variables (you maywant to consider partial dependence plots (plot) on single and pairs of variables, etc.).**
+
+# Problem 8:
+**(15) Regression: Marketing data.The data setage_stats315B.csvwas already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
+
+**(a) Fit a gbm model for predicting age form the other demographic attributes and comparethe accuracy with the accuracy of your best single tree from Homework 1.**
+
+**(b) Identify the most important variables.**
+
+# Problem 9.
+**(15)Multiclass classification: marketing data.The data setoccup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributescan be found inoccup_stats315B.txt. The goal in this problem is to fit a gbm model to predictthe type of occupation from the 13 other demographic variables.**
+
+**(a) Report the test set misclassification error for gbm on thedata set, and also the misclas-sification errorfor each class.**
+
+**(b) Identify the most important variables.**
