@@ -13,8 +13,8 @@ library(knitr)
 ```
 
 ## TODO:
-- [ ] Can someone sanity check 1?
-- [ ] 3-9
+- [ ] I thought I had 3, but as I typed it up I realized it didn't actually work.  Left what I had just in case.
+- [ ] 4-9
 
 # Problem 1:
 **(10) Random forests predict with an ensemble of bagged trees each trained on a bootstrap sample randomly drawn from the original training data. Additional random variation among the trees is induced by choosing the variable for each split from a small randomly chosen subset of all of the predictor variables when building each tree. What are the advantages and disadvantages of this random variable selection strategy? How can one introduce additional tree variation in the forest without randomly selecting subsets of variables?**
@@ -37,14 +37,28 @@ However, introducing regularization adds bias to our model: too much regularizat
 In the boosting context, the "predictor variables" for our linear regression are the results from all possible base learners.  However, almost all base learners are probably very poor predictors of the outcome; only a small subset of them are effective and should have nonzero weight.  This means we generally want a sparse model. This assumption might not hold true if we happened to be dealing with a small base learner function class in which nearly all models were effective predictors.  However, in practice, this nearly never happens.
 
 # Problem 3:
-**(15) LetˆR(a) =1NN∑i=1(yi−a0−n∑j=1ajxij)2 be the empirical risk in a linear regression problem. Show that the convex members of the power family of penalties, except for the lasso,Pγ(a) =n∑j=1|aj|γ(γ >1)have the property that solutions toˆa(λ) = argminaˆR(a)+λ·Pγ(a)have nonzero values for all coefficients at each path point indexed byλ. By contrast the convex members of the elastic net (except ridge)Pγ(a) =n∑j=1(γ−1)a2j/2+(2−γ)|aj|(1≤γ <2)1
-can produce solutions with many zero valued coefficients at various path points.**
+**(15) Assume squared error loss. Show that the convex members of the power family of penalties, except for the lasso, have the property that solutions for $\lambda > 0$ have nonzero values for all coefficients at each path point.**
+
+Consider the objective function, $\hat{R}(\vec{a}) + \lambda P(\vec{a}).$ To simplify notation, we will assume that $x_{i0} = 1$ for each observation $i$ to account for the intercept term. The derivative of the objective function with respect to some arbitrary coefficient $a_k$ is:
+
+$$\frac{\partial \hat{R}(\vec{a})}{\partial a_k} + \lambda\frac{\partial P(\vec{a})}{\partial a_k}$$
+
+Where
+
+$$\frac{\partial \hat{R}(\vec{a})}{\partial a_k} = \frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j= 0}^pa_jx_{ij} \right),$$
+and 
+$$\frac{\partial P(\vec{a})}{\partial a_k} = \gamma |a_k|^\gamma sign(a_k).$$
+(It is worth noting that  $P(\vec{a})$ is not necessarily differentiable at 0.)  
+
+When $\lambda = 0$, $\hat{a}_k$ is the least squares solution.  As $\lambda$ goes to 0, $\hat{a}_k$ also goes to 0. However, as $\hat{a}_k$ goes to zero, the derivative of the objective with respect to a_k approaches:
+
+$$\frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j\neq k}^pa_jx_{ij} \right).$$  
 
 # Problem 4:
 **(10) Consider an outcome variable y and predictor variables{xj}Jj=1 with E[xj] = 0 and E[x2j] = 1 for all x. Show that the variablexj∗that has the maximum absolute correlation withyj∗= arg max1≤j≤J|E(y·xj)|is the same as the one that best predictsyusing squared—error lossj∗= arg min1≤j≤JminρE[y−ρ·xj]2.This shows that the base learner most correlated with the generalized residual is the one thatbest predicts it with squared—error loss.**
 
 # Problem 5:
-**(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andz\lthe complement subsetzl∪z\l=x. Show that if a functionF(x)is additive inzlandz\lF(x) =Fl(zl)+F\l(z\l)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant.  This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz\l.  Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz\l. Under what conditions would the two be the same?For this homework, as in Homework 1, you will be using the R. The rest of this homeworkinvolves becoming familiar with the R package gbm (gradientboosting machine).  Gradientboosting is covered in Sections 10.8 — 10.14.3 of the text. Further information can be found inthe papers:Greedy function approximation:  a gradient boosting machineandStochastic gradientboosting. Both of these papers are available athttp://www-stat.stanford.edu/~jhf/#reports.The first step is to install the gbm package with the R command:install.packages("gbm")and follow the instructions.  This requires an internet connection.  It need be done only onceat the first R session. Next the package must be loaded with theR commandlibrary(gbm).This must be done in every R session before using any gbm procedures. The R documentationfor gbmPackage ‘gbm’(gbm_doc.pdf), a guide (gbm_guide.pdf) and a tutorialBoosting withR Programming(gbm_tutorial.pdf )are posted in the class canvas web site. Study the tutorial(gbm_tutorial.pdf) carefully as it describes the necessary information to perform the homework.The data setsspam_stats315B.csv,age_stats315B.csv,calif_stats315B.csvandoccup_stats315B.csvalong with documentation filesage_stats315B.txt,spam_stats315B_info.txt,spam_stats315B_names.txt,calif_stats315B.txtcan be found in the class canvas web page. Note that the results from thecomputational problems may not look exactly like the ones inthe textbook due to plottingoptions and slight possible differences in the data sets used.**
+**(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andz\lthe complement subsetzl∪z\l=x. Show that if a functionF(x)is additive inzlandz\lF(x) =Fl(zl)+F\l(z\l)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant.  This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz\l.  Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz\l. Under what conditions would the two be the same?**
 
 # Problem 6: 
 **(15) Binary classification: Spam Email.The data set for this problem isspam_stats315B.csv,with documentation filesspam_stats315B_info.txtandspam_stats315B_names,txt. The dataset is a collection of 4601 emails of which 1813 were considered spam, i.e. unsolicited commercialemail. The data set consists of 58 attributes of which 57 are continuous predictors and one is a
