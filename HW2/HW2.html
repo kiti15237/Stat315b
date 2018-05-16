@@ -128,27 +128,42 @@ $(document).ready(function () {
 
 <div id="todo" class="section level2">
 <h2>TODO:</h2>
-<p>-[ ] 1 - 9</p>
+<ul>
+<li>[ ] I thought I had 3, but as I typed it up I realized it didn’t actually work. Left what I had just in case.</li>
+<li>[ ] 4-9</li>
+</ul>
 </div>
 <div id="problem-1" class="section level1">
 <h1>Problem 1:</h1>
-<p><strong>(10) Random forests predict with an ensemble of bagged treeseach trained on a bootstrapsample randomly drawn from the original training data. Additional random variation among the trees is induced by choosing the variable for each split froma small randomly chosen subset of all of the predictor variables when building each tree. What are the advantages and disadvantages of this random variable selection strategy? How can one introduce additional tree variation in the forest without randomly selecting subsets of variables?</strong></p>
+<p><strong>(10) Random forests predict with an ensemble of bagged trees each trained on a bootstrap sample randomly drawn from the original training data. Additional random variation among the trees is induced by choosing the variable for each split from a small randomly chosen subset of all of the predictor variables when building each tree. What are the advantages and disadvantages of this random variable selection strategy? How can one introduce additional tree variation in the forest without randomly selecting subsets of variables?</strong></p>
+<p><em>Advantages:</em> Without the random variable selection strategy, the trees from the bootstrapped samples are likely to be highly correllated: Since the input samples are very similar, the trees may tend to split on the same subset of highly correllated variables. However, averaging a forest of near-identical trees adds little value when it comes to decreasing the variance of the overall classifier. The random variable selection strategy introduces variation among the trees by ensuring that they are not all splitting on the same sequence of variables. This breaks down the correllations between trees in the forest.</p>
+<p><em>Disadvantages:</em> Suppose (as is very often the case), that many of the model variables are uninformative for prediction. In this case, the random variable selection strategy is likely to generate many trees which have splits on relatively useless variables.</p>
+<p>Additional variation can be induced by: - limiting the sample sizes from which each base learner is trained. - during training, using random split points for each feature under consideration when constructing a split, rather than the optimal split point for each feature (as in the ExtraTrees approach).</p>
 </div>
 <div id="problem-2" class="section level1">
 <h1>Problem 2:</h1>
 <p><strong>(5) Why is it necessary to use regularization in linear regression when the number of predictor variables is greater than the number of observations in the training sample? Explain how regularization helps in this case. Are there other situations where regularization might help? What is the potential disadvantage of introducing regularization? Why is sparsity a reasonable assumption in the boosting context. Is it always? If not, why not?</strong></p>
+<p>We showed in 315A that, when <span class="math inline">\(n &lt; p\)</span>, there is an infinite number of equally optimal solutions to the linear least squares problem. In these cases, all of those optimal solutions are likely to be highly overfit to the training data. Regularization helps us simplify the linear model we produce (decrease model variance), and allows us to select for models which are in line with our expectations (i.e. sparse ones) by adding a “prior” for our coefficients. This same logic applies when <span class="math inline">\(n \geq p\)</span>, but <span class="math inline">\(p\)</span> is very large, and/or many of our variables are uninformative.</p>
+<p>However, introducing regularization adds bias to our model: too much regularization can be just as bad for performance as too little. At the extreme, putting infinite weight on the regularization in our model training results in a model with all coefficients equal to zero, which is useless.</p>
+<p>In the boosting context, the “predictor variables” for our linear regression are the results from all possible base learners. However, almost all base learners are probably very poor predictors of the outcome; only a small subset of them are effective and should have nonzero weight. This means we generally want a sparse model. This assumption might not hold true if we happened to be dealing with a small base learner function class in which nearly all models were effective predictors. However, in practice, this nearly never happens.</p>
 </div>
 <div id="problem-3" class="section level1">
 <h1>Problem 3:</h1>
-<p><strong>(15) LetˆR(a) =1NN∑i=1(yi−a0−n∑j=1ajxij)2 be the empirical risk in a linear regression problem. Show that the convex members of the powerfamily of penalties, except for the lasso,Pγ(a) =n∑j=1|aj|γ(γ &gt;1)have the property that solutions toˆa(λ) = argminaˆR(a)+λ·Pγ(a)have nonzero values for all coefficients at each path point indexed byλ. By contrast the convexmembers of the elastic net (except ridge)Pγ(a) =n∑j=1(γ−1)a2j/2+(2−γ)|aj|(1≤γ &lt;2)1 can produce solutions with many zero valued coefficients at various path points.</strong></p>
+<p><strong>(15) Assume squared error loss. Show that the convex members of the power family of penalties, except for the lasso, have the property that solutions for <span class="math inline">\(\lambda &gt; 0\)</span> have nonzero values for all coefficients at each path point.</strong></p>
+<p>Consider the objective function, <span class="math inline">\(\hat{R}(\vec{a}) + \lambda P(\vec{a}).\)</span> To simplify notation, we will assume that <span class="math inline">\(x_{i0} = 1\)</span> for each observation <span class="math inline">\(i\)</span> to account for the intercept term. The derivative of the objective function with respect to some arbitrary coefficient <span class="math inline">\(a_k\)</span> is:</p>
+<p><span class="math display">\[\frac{\partial \hat{R}(\vec{a})}{\partial a_k} + \lambda\frac{\partial P(\vec{a})}{\partial a_k}\]</span></p>
+<p>Where</p>
+<p><span class="math display">\[\frac{\partial \hat{R}(\vec{a})}{\partial a_k} = \frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j= 0}^pa_jx_{ij} \right),\]</span> and <span class="math display">\[\frac{\partial P(\vec{a})}{\partial a_k} = \gamma |a_k|^\gamma sign(a_k).\]</span> (It is worth noting that <span class="math inline">\(P(\vec{a})\)</span> is not necessarily differentiable at 0.)</p>
+<p>When <span class="math inline">\(\lambda = 0\)</span>, <span class="math inline">\(\hat{a}_k\)</span> is the least squares solution. As <span class="math inline">\(\lambda\)</span> goes to 0, <span class="math inline">\(\hat{a}_k\)</span> also goes to 0. However, as <span class="math inline">\(\hat{a}_k\)</span> goes to zero, the derivative of the objective with respect to a_k approaches:</p>
+<p><span class="math display">\[\frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j\neq k}^pa_jx_{ij} \right).\]</span></p>
 </div>
 <div id="problem-4" class="section level1">
 <h1>Problem 4:</h1>
-<p><strong>(10) Consider an outcome variableyand predictor variables{xj}Jj=1withE[xj] = 0andE[x2j] = 1for allx. Show that the variablexj∗that has the maximum absolute correlation withyj∗= arg max1≤j≤J|E(y·xj)|is the same as the one that best predictsyusing squared—error lossj∗= arg min1≤j≤JminρE[y−ρ·xj]2.This shows that the base learner most correlated with the generalized residual is the one thatbest predicts it with squared—error loss.</strong></p>
+<p><strong>(10) Consider an outcome variable y and predictor variables{xj}Jj=1 with E[xj] = 0 and E[x2j] = 1 for all x. Show that the variablexj∗that has the maximum absolute correlation withyj∗= arg max1≤j≤J|E(y·xj)|is the same as the one that best predictsyusing squared—error lossj∗= arg min1≤j≤JminρE[y−ρ·xj]2.This shows that the base learner most correlated with the generalized residual is the one thatbest predicts it with squared—error loss.</strong></p>
 </div>
 <div id="problem-5" class="section level1">
 <h1>Problem 5:</h1>
-<p><strong>(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andzcomplement subsetzl∪z=x. Show that if a functionF(x)is additive inzlandz(x) =Fl(zl)+F(z)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant. This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz. Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz. Under what conditions would the two be the same?For this homework, as in Homework 1, you will be using the R. The rest of this homeworkinvolves becoming familiar with the R package gbm (gradientboosting machine). Gradientboosting is covered in Sections 10.8 — 10.14.3 of the text. Further information can be found inthe papers:Greedy function approximation: a gradient boosting machineandStochastic gradientboosting. Both of these papers are available athttp://www-stat.stanford.edu/~jhf/#reports.The first step is to install the gbm package with the R command:install.packages(“gbm”)and follow the instructions. This requires an internet connection. It need be done only onceat the first R session. Next the package must be loaded with theR commandlibrary(gbm).This must be done in every R session before using any gbm procedures. The R documentationfor gbmPackage ‘gbm’(gbm_doc.pdf), a guide (gbm_guide.pdf) and a tutorialBoosting withR Programming(gbm_tutorial.pdf )are posted in the class canvas web site. Study the tutorial(gbm_tutorial.pdf) carefully as it describes the necessary information to perform the homework.The data setsspam_stats315B.csv,age_stats315B.csv,calif_stats315B.csvandoccup_stats315B.csvalong with documentation filesage_stats315B.txt,spam_stats315B_info.txt,spam_stats315B_names.txt,calif_stats315B.txtcan be found in the class canvas web page. Note that the results from thecomputational problems may not look exactly like the ones inthe textbook due to plottingoptions and slight possible differences in the data sets used.</strong></p>
+<p><strong>(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andzcomplement subsetzl∪z=x. Show that if a functionF(x)is additive inzlandz(x) =Fl(zl)+F(z)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant. This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz. Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz. Under what conditions would the two be the same?</strong></p>
 </div>
 <div id="problem-6" class="section level1">
 <h1>Problem 6:</h1>
@@ -161,7 +176,7 @@ $(document).ready(function () {
 </div>
 <div id="problem-7" class="section level1">
 <h1>Problem 7:</h1>
-<p><strong>(15)Regression: California Housing.The data setcalif_stats315B.csvconsists of ag-gregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described incalif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least</strong></p>
+<p><strong>(15)Regression: California Housing.The data setcalif_stats315B.csvconsists of aggregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described incalif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least</strong></p>
 <p><strong>(a) The prediction accuracy of gbm on the data set.</strong></p>
 <p><strong>(b) Identification of the most important variables.</strong></p>
 <p><strong>(c) Comments on the dependence of the response on the most important variables (you maywant to consider partial dependence plots (plot) on single and pairs of variables, etc.).</strong></p>
@@ -174,7 +189,7 @@ $(document).ready(function () {
 </div>
 <div id="problem-9." class="section level1">
 <h1>Problem 9.</h1>
-<p><strong>(15)Multiclass classification: marketing data.The data setoccup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributescan be found inoccup_stats315B.txt. The goal in this problem is to fit a gbm model to predictthe type of occupation from the 13 other demographic variables.</strong></p>
+<p><strong>(15) Multiclass classification: marketing data.The data setoccup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributescan be found inoccup_stats315B.txt. The goal in this problem is to fit a gbm model to predictthe type of occupation from the 13 other demographic variables.</strong></p>
 <p><strong>(a) Report the test set misclassification error for gbm on thedata set, and also the misclas-sification errorfor each class.</strong></p>
 <p><strong>(b) Identify the most important variables.</strong></p>
 </div>

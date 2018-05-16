@@ -64,6 +64,40 @@ $$\frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j\neq k}^pa_jx_{ij} \right).$
 **(15) Binary classification: Spam Email.The data set for this problem isspam_stats315B.csv,with documentation filesspam_stats315B_info.txtandspam_stats315B_names,txt. The dataset is a collection of 4601 emails of which 1813 were considered spam, i.e. unsolicited commercialemail. The data set consists of 58 attributes of which 57 are continuous predictors and one is a
 class label that indicates whether the email was consideredspam (1) or not (0). Among the 57predictor attributes are: percentage of the word "free" in the email, percentage of exclamationmarks in the email, etc. See filespam_stats315B_names.txtfor the full list of attributes. Thegoal is, of course, to predict whether or not an email is "spam". This data set is used for illus-tration in the tutorialBoosting with R Programming. The data setspam_stats315B_train.csvrepresents a subsample of these emails randomly selected fromspam_stats315B.csvto be usedfor training.  The filespam_stats315B_test.csvcontains the remaining emails to be used forevaluating results.**
 
+```{r}
+#setwd("~/Desktop/Stats315B/Stat315b/HW2")
+require(gbm)
+spam_train <- read.csv("spam_stats315B_train.csv", header=F)
+spam_test <- read.csv("spam_stats315B_test.csv", header=F)
+rflabs<-c("make", "address", "all", "3d", "our", "over", "remove",
+  "internet","order", "mail", "receive", "will",
+  "people", "report", "addresses","free", "business",
+  "email", "you", "credit", "your", "font","000","money",
+  "hp", "hpl", "george", "650", "lab", "labs",
+  "telnet", "857", "data", "415", "85", "technology", "1999",
+  "parts","pm", "direct", "cs", "meeting", "original", "project",
+  "re","edu", "table", "conference", ";", "(", "[", "!", "$", "#",
+  "CAPAVE", "CAPMAX", "CAPTOT","type")
+  # Names for predictors and response
+
+colnames(spam_train) <- colnames(spam_test) <- rflabs
+
+gbm0 <- gbm(type ~ ., data=spam_train, train.fraction=0.8, interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="bernoulli", verbose=F)
+gbm0.predict <- predict(gbm0, spam_train, type="response", n.trees=300)
+gbm.perf(gbm0, method="cv")
+summary(gbm0, main="RELATIVE INFLUENCE OF ALL PREDICTORS")
+
+gbm0.test <- predict(gbm0, spam_test, type="link", n.trees=300)
+gbm0.labels <- as.numeric(gbm0.test >= 0)
+(misclassification.error <- (1 - sum(spam_test$type == gbm0.labels) / nrow(spam_test))*100)
+test.pos.inds <- which(spam_test$type == 1)
+test.neg.inds <- which(spam_test$type == 0)
+(false.negs <- (1 - sum(spam_test[test.pos.inds,]$type == gbm0.labels[test.pos.inds]) / length(test.pos.inds))*100)
+(false.pos <- (1 - sum(spam_test[test.neg.inds,]$type == gbm0.labels[test.neg.inds]) / length(test.neg.inds))*100)
+
+
+```
+
 **(a) Based on the training data, fit a gbm model for predicting whether or not an emailis“spam”, following the example in the tutorial. What is your estimate of the misclassificationrate?  Of all the spam emails of the test set what percentage was misclassified, and of all thenon-spam emails in the test set what percentage was misclassified?**
 
 **(b) Your classifier in part (a) can be used as a spam filter. One of the possible disadvantagesof such a spam filter is that it might filter out too many good (non-spam) emails. Therefore, abetter spam filter might be the one that penalizes misclassifying non-spam emails more heavilythan the spam ones. Suppose that you want to build a spam filterthat  “throws out” no morethat 0.3% of the good (non-spam) emails. You have to find and use a cost matrix that penalizesmisclassifying “good” emails as“spam” more than misclassifying “spam” emails as “good” by themethod of trial and error. Once you have constructed your final spam filter with the propertydescribed above, answer the following questions:**
