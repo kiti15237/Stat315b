@@ -117,7 +117,7 @@ calif <- read.csv("calif_stats315B.csv", header=F)
 colnames(calif) <- c("Value", "Income", "Age", "Rooms", "Bedrooms", "Population", "Occupancy", "Latitude", "Longitude")
 
 gbm.calif <- gbm(Value ~ ., data=calif, train.fraction=0.8, interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="gaussian", verbose=T)
-gbm.predict <- predict(gbm.calif, calif)
+gbm.predict <- predict(gbm.calif, calif[-1])
 gbm.perf(gbm.calif, method="cv")
 
 (MSE <- sum((gbm.predict - calif$Value)**2))
@@ -147,13 +147,50 @@ In order: Income, Occupancy, Longitude, Latitude, Age, Rooms, Population, Bedroo
 In considering potential interactions, we only considered Income, Occupancy, Longitude, and Latitude. Occupancy has no noticable interactions with any of the other 3 big variables. However, all 3 other important variables exhibit a good deal of interaction with one another as shown by the partial dependence plots.
 
 # Problem 8:
+
+```{r}
+
+age <- read.csv("age_stats315B.csv", header=T)
+factor_columns <- c(2,3,4,5,9,12,13,14)
+ordered_columns <- c(1,6,7,8,10,11)
+age[, factor_columns] <- lapply(age[factor_columns], as.factor)
+age[, ordered_columns] <- lapply(age[ordered_columns], as.ordered)
+
+train_ind <- sample(1:nrow(age), size = nrow(age) * .8)
+test_ind <- seq(1,nrow(age))[!(seq(1,nrow(age)) %in% train_ind)]
+
+gbm.age <- gbm(age ~ ., data=age[train_ind,], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="gaussian", verbose=T)
+gbm.perf(gbm.age, method="cv")
+
+gbm.predict <- predict(gbm.age, age[test_ind,-1])
+(acc <- sum(round(gbm.predict) == age[test_ind,]$age)/length(test_ind) )
+
+model <- rpart(age ~ ., data = age[train_ind,])
+rpart.pred <- predict(model, age[test_ind,-1])
+(acc_rpart <- sum(round(rpart.pred) == age[test_ind,]$age)/length(test_ind) )
+
+summary(gbm.age)
+
+```
+
+
 **(15) Regression: Marketing data.The data setage_stats315B.csvwas already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
 
-**(a) Fit a gbm model for predicting age form the other demographic attributes and comparethe accuracy with the accuracy of your best single tree from Homework 1.**
+**(a) Fit a gbm model for predicting age form the other demographic attributes and compare the accuracy with the accuracy of your best single tree from Homework 1.**
+
+The accuracy is much higher using GBM (54% as compared to 9.7% of getting the exact age class right)
 
 **(b) Identify the most important variables.**
 
+The most important are in order: MarStat, Occup, HouseStat, Edu, Persons, Ethnic, Income, Under18, LiveBA, DualInc, TypeHome, Lang, Sex. Marital status and occupation are clearly the most important variables.
+
 # Problem 9.
+
+```{r}
+
+
+```
+
 **(15) Multiclass classification: marketing data.The data setoccup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributescan be found inoccup_stats315B.txt. The goal in this problem is to fit a gbm model to predictthe type of occupation from the 13 other demographic variables.**
 
 **(a) Report the test set misclassification error for gbm on thedata set, and also the misclas-sification errorfor each class.**
