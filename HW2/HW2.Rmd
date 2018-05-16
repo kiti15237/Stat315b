@@ -198,7 +198,7 @@ occup[, ordered_columns] <- lapply(occup[ordered_columns], as.ordered)
 train_ind <- sample(1:nrow(occup), size = nrow(occup) * .8)
 test_ind <- seq(1,nrow(occup))[!(seq(1,nrow(occup)) %in% train_ind)]
 
-# Make a matrix, store the predicted probabilities for each class, predicting on dummy encodings, then determine the prediction based on which category has the highest probability, calculate accuracy. Not sure how to decide which are the most important variables.... maybe there's some consensus about which are most important for most classes?
+### CURRENT THINKING: Make a matrix, store the predicted probabilities for each class, predicting on dummy encodings, then determine the prediction based on which category has the highest probability, calculate accuracy. Not sure how to decide which are the most important variables.... maybe there's some consensus about which are most important for most classes?
 
 for (i in 1:9) {
  
@@ -208,11 +208,6 @@ for (i in 1:9) {
    
 }
 
-gbm.predict <- predict(gbm.age, age[test_ind,-1])
-(acc <- sum(round(gbm.predict) == age[test_ind,]$age)/length(test_ind) )
-
-
-gbm.perf(gbm.occup, method="cv")
 
 ```
 
