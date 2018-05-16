@@ -1,6 +1,6 @@
 ---
 title: "STATS 315B - Homework 2"
-author: "Rachael Caelie “Rocky” Aikens, Christine Tartaru, and Daniel Sosa"
+author: "Rachael Caelie “Rocky” Aikens, Christine Tataru, and Daniel Sosa"
 date: "May 14, 2018"
 output: html_document
 ---
