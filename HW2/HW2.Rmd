@@ -89,11 +89,11 @@ summary(gbm0, main="RELATIVE INFLUENCE OF ALL PREDICTORS")
 
 gbm0.test <- predict(gbm0, spam_test, type="link", n.trees=300)
 gbm0.labels <- as.numeric(gbm0.test >= 0)
-(misclassification.error <- (1 - sum(spam_test$type == gbm0.labels) / nrow(spam_test))*100)
+(misclassification.error <- sum(spam_test$type != gbm0.labels) / nrow(spam_test)*100)
 test.pos.inds <- which(spam_test$type == 1)
 test.neg.inds <- which(spam_test$type == 0)
-(false.negs <- (1 - sum(spam_test[test.pos.inds,]$type == gbm0.labels[test.pos.inds]) / length(test.pos.inds))*100)
-(false.pos <- (1 - sum(spam_test[test.neg.inds,]$type == gbm0.labels[test.neg.inds]) / length(test.neg.inds))*100)
+(false.negs <- sum(spam_test[test.pos.inds,]$type != gbm0.labels[test.pos.inds]) / length(test.pos.inds)*100)
+(false.pos <- sum(spam_test[test.neg.inds,]$type != gbm0.labels[test.neg.inds]) / length(test.neg.inds)*100)
 
 
 ```
@@ -111,11 +111,40 @@ test.neg.inds <- which(spam_test$type == 0)
 # Problem 7:
 **(15)Regression: California Housing.The data setcalif_stats315B.csvconsists of aggregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described incalif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least**
 
+```{r}
+
+calif <- read.csv("calif_stats315B.csv", header=F)
+colnames(calif) <- c("Value", "Income", "Age", "Rooms", "Bedrooms", "Population", "Occupancy", "Latitude", "Longitude")
+
+gbm.calif <- gbm(Value ~ ., data=calif, train.fraction=0.8, interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="gaussian", verbose=T)
+gbm.predict <- predict(gbm.calif, calif)
+gbm.perf(gbm.calif, method="cv")
+
+(MSE <- sum((gbm.predict - calif$Value)**2))
+
+summary(gbm.calif, main="RELATIVE INFLUENCE OF ALL PREDICTORS")
+
+plot(gbm.calif, c(1,6))
+plot(gbm.calif, c(1,7))
+plot(gbm.calif, c(1,8))
+plot(gbm.calif, c(6,7))
+plot(gbm.calif, c(6,8))
+plot(gbm.calif, c(7,8))
+
+
+```
+
 **(a) The prediction accuracy of gbm on the data set.**
+
+Mean squared error is 4424.596
 
 **(b) Identification of the most important variables.**
 
+In order: Income, Occupancy, Longitude, Latitude, Age, Rooms, Population, Bedrooms.
+
 **(c) Comments on the dependence of the response on the most important variables (you maywant to consider partial dependence plots (plot) on single and pairs of variables, etc.).**
+
+In considering potential interactions, we only considered Income, Occupancy, Longitude, and Latitude. Occupancy has no noticable interactions with any of the other 3 big variables. However, all 3 other important variables exhibit a good deal of interaction with one another as shown by the partial dependence plots.
 
 # Problem 8:
 **(15) Regression: Marketing data.The data setage_stats315B.csvwas already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
