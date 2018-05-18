@@ -1,6 +1,6 @@
 ---
 title: "STATS 315B - Homework 2"
-author: "Rachael Caelie “Rocky” Aikens, Christine Tataru, and Daniel Sosa"
+author: "Rachael Caelie (Rocky) Aikens, Christine Tataru, and Daniel Sosa"
 date: "May 14, 2018"
 output: html_document
 ---
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(ggplot2)
 library(dplyr)
 library(knitr)
+library(rpart)
 ```
 
 ## TODO:
@@ -54,12 +55,60 @@ When $\lambda = 0$, $\hat{a}_k$ is the least squares solution.  As $\lambda$ goe
 
 $$\frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j\neq k}^pa_jx_{ij} \right).$$  
 
+#####################################################
+1) Differentiate and find the form of the solution by setting it equal to 0
+We first consider the general minimum found by setting the derivative with respect to $a_j$ to 0.
+$$ \frac{d}{da_j} \hat{R}(a) + \lambda P(a) = \frac{d}{da_j} ((y - xa)^2 + \sum_{k}^K a_k^{\gamma}) = -2x_j(y - xa) + \gamma a_j^{\gamma - 1} = 0$$
+2) assume toward contradiction that a_j = 0
+$$  -2x_j(y - xa) = 0 $$
+3) Contradiction. The probability of $y - xa = 0$ is 0 for some continuous y. Therefore, the likelihood of $a_j$ being exactly equal to 0 is very low.
+
+We now consider the elastic net:
+$$ (y-xa)^2 + \sum_{j=1}^n (\gamma - 1)a_j^2/2 + (2-\gamma)|a_j| $$
+We would like to take the derivative w.r.t $a_j$ as we did above, however, we cannot differentiate the absolute value. We therefore take directional derivatives. We take $e_j$ to be the cardinal direction of j.
+
+$$D_{e_j} = lim_{\epsilon -> 0} \frac{1}{\epsilon} [ R(a + \epsilon e_j) - R(a) + \lambda P(a + \epsilon e_{j}) - \lambda P(a)] $$
+$$R(a + \epsilon e_j) - R(a) = x_j(y - x(a + \epsilon e_j)) $$
+$$\lambda P(a + \epsilon e_1) - \lambda P(a) = (\gamma - 1) (a_j + \epsilon e_j)^2 - (\gamma - 1)(a_j)^2 + (2 - \gamma)|\epsilon e_j| = (\gamma -1 )(2a_j \epsilon e_j + \epsilon ^2 e_j^2) + (2 - \gamma)|\epsilon e_j|$$
+
+#eventually this should lead us to the conclusion that $x_j(y-xa)$ can be in some range when $a_j = 0$ and is a minimum. This can happen with an actual probability, as opposed to the other scenario where that value had to be equal to 0
+
+
 # Problem 4:
-**(10) Consider an outcome variable y and predictor variables{xj}Jj=1 with E[xj] = 0 and E[x2j] = 1 for all x. Show that the variablexj∗that has the maximum absolute correlation withyj∗= arg max1≤j≤J|E(y·xj)|is the same as the one that best predictsyusing squared—error lossj∗= arg min1≤j≤JminρE[y−ρ·xj]2.This shows that the base learner most correlated with the generalized residual is the one thatbest predicts it with squared—error loss.**
+INCOMPLETE: I"M NOT SURE WHETHER I'M ON THE RIGHT TRACK
+$$j^* = argmin_{1 \leq j \leq J} min_{\rho} E[y - \rho x_j]^2$$
+First, we find an expression for $\rho^*(j)$, the $\rho$ that minimizes the expression for any given j. Take the derivative w.r.t $\rho$ and set the expression to 0:
+$$\frac{1}{n} \sum_{i=1}^N (y_i - \rho x_{ij})^2 $$
+$$\frac{1}{n} \sum_{i=1}^N -2 x_{ij}(y_i - \rho x_{ij}) $$
+$$\frac{2}{n} \rho \sum_i x_{ij}^2 = \frac{2}{n} \sum_{i} x_{ij} y_i  $$
+$$ \rho = \frac{\sum_i x_{ij} y_i}{ \sum_i x_{ij}^2}$$
+$$ \rho^*(j) = \frac{ E[y x_j]} { E[x_{j^2}]} $$
+We can now plug this back into the original expression to try to minimize over j:
+$$ j^* = argmin_j \frac{1}{n} \sum_i (y_i - \frac{ E[y x_j]} { E[x_{j^2}]} x_{ij})^2$$
 
 # Problem 5:
-**(10) Letzl={z1,· · ·,zl}be a subset of the predictor variablesx={x1,· ··,xn}andz\lthe complement subsetzl∪z\l=x. Show that if a functionF(x)is additive inzlandz\lF(x) =Fl(zl)+F\l(z\l)then the partial dependence ofF(x)onzlisFl(zl)up to an additive constant.  This is thedependence ofF(x)onzlaccounting for the effect of the other variablesz\l.  Show that thisneed not be the case forE[F(x)|zl]which is the dependence ofF(x)onzlignoring the othervariablesz\l. Under what conditions would the two be the same?**
 
+The partial dependence of F(x) on $z_l$ can be expressed as the expectation of F(x) after integrating over all values $z_{\l}$
+$$ E_{z \l}[F(x)] = \int F(x) f_{z \l}(t) dt$$
+Expanding F(x):
+$$ \int F_l(z_l) f_{z \l}(t) dt + \int F_{z \l}(t) f_{z \l}(t) dt$$
+Simplifying, we find
+$$ F_l(z_l) * 1 + \int F_{z \l}(t) f_{z \l}(t) dt$$
+It can be seen that the second term is a function integrated over it's entire domain, which will result in some constant c.
+$$ E_{z \l}[F(x)]  =  F_l(z_l) + c $$
+We now consider the dependence of F(x) on $z_l$ ignoring the other variables
+\begin{aligned}
+E[F(x) | z_l] = \int F(x) f_{z\l | z_l}
+\end{aligned}
+$$E[F(x) | z_l] = \int F(x) f_{z\l | z_l}$$
+$$ =  \int F_l(z_l)  f_{z\l | z_l}(t)dt + \int F_{\l}(t)f_{z\l | z_l}(t)dt $$
+$$  F_l(z_l) * 1 + \int F_{\l}(t)f_{z\l | z_l}(t)dt$$
+Unlike in the previous case, the second term does NOT integrate to a constant, because the probability density $f_{z\l | z_l}(t)$ depends on the given value of $z_l$
+
+$$  F_l(z_l) + \int F_{\l}(t)f_{z\l | z_l}(t)dt $$
+If the values of $z_{\l}$ are completely independent of $z_l$, the two methods will be identical.
+
+Conceptually, this expresses the idea that some subset of variables can be used to extract information about an objective based on their correlation with predictive variables. 
 # Problem 6: 
 **(15) Binary classification: Spam Email.The data set for this problem isspam_stats315B.csv,with documentation filesspam_stats315B_info.txtandspam_stats315B_names,txt. The dataset is a collection of 4601 emails of which 1813 were considered spam, i.e. unsolicited commercialemail. The data set consists of 58 attributes of which 57 are continuous predictors and one is a
 class label that indicates whether the email was consideredspam (1) or not (0). Among the 57predictor attributes are: percentage of the word "free" in the email, percentage of exclamationmarks in the email, etc. See filespam_stats315B_names.txtfor the full list of attributes. Thegoal is, of course, to predict whether or not an email is "spam". This data set is used for illus-tration in the tutorialBoosting with R Programming. The data setspam_stats315B_train.csvrepresents a subsample of these emails randomly selected fromspam_stats315B.csvto be usedfor training.  The filespam_stats315B_test.csvcontains the remaining emails to be used forevaluating results.**
@@ -98,18 +147,36 @@ test.neg.inds <- which(spam_test$type == 0)
 
 ```
 
-**(a) Based on the training data, fit a gbm model for predicting whether or not an emailis“spam”, following the example in the tutorial. What is your estimate of the misclassificationrate?  Of all the spam emails of the test set what percentage was misclassified, and of all thenon-spam emails in the test set what percentage was misclassified?**
+**(a) Based on the training data, fit a gbm model for predicting whether or not an email is spam , following the example in the tutorial. What is your estimate of the misclassification rate?  Of all the spam emails of the test set what percentage was misclassified, and of all the non-spam emails in the test set what percentage was misclassified?**
 
-**(b) Your classifier in part (a) can be used as a spam filter. One of the possible disadvantagesof such a spam filter is that it might filter out too many good (non-spam) emails. Therefore, abetter spam filter might be the one that penalizes misclassifying non-spam emails more heavilythan the spam ones. Suppose that you want to build a spam filterthat  “throws out” no morethat 0.3% of the good (non-spam) emails. You have to find and use a cost matrix that penalizesmisclassifying “good” emails as“spam” more than misclassifying “spam” emails as “good” by themethod of trial and error. Once you have constructed your final spam filter with the propertydescribed above, answer the following questions:**
+Misclassification error: `r misclassification.error `
+Spam misclassified as non-spam (false neg): `r false.negs`
+Non-spam misclassified as spam (false pos): `r false.pos`
 
-*(i) What is the overall misclassification error of your final filter and what is the percentageof good emails and spam emails that were misclassified respectively?*
+**(b) Your classifier in part (a) can be used as a spam filter. One of the possible disadvantages of such a spam filter is that it might filter out too many good (non-spam) emails. Therefore, a better spam filter might be the one that penalizes misclassifying non-spam emails more heavily than the spam ones. Suppose that you want to build a spam filter that throws out no more that 0.3% of the good (non-spam) emails. You have to find and use a cost matrix that penalizes misclassifying good emails as spam more than misclassifying spam emails as good by the method of trial and error. Once you have constructed your final spam filter with the propertydescribed above, answer the following questions:**
+```{r}
+gbm0 <- gbm(type ~ ., data=spam_train, train.fraction=0.8, interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="bernoulli", verbose=F, weights = (spam_train$type == 0) + .0001)
+gbm0.test <- predict(gbm0, spam_test, type="link", n.trees=300)
+gbm0.labels <- as.numeric(gbm0.test >= 0)
+(misclassification.error <- sum(spam_test$type != gbm0.labels) / nrow(spam_test)*100)
+test.pos.inds <- which(spam_test$type == 1)
+test.neg.inds <- which(spam_test$type == 0)
+false.negs <- sum(spam_test[test.pos.inds,]$type != gbm0.labels[test.pos.inds]) / length(test.pos.inds)*100
+false.pos <- sum(spam_test[test.neg.inds,]$type != gbm0.labels[test.neg.inds]) / length(test.neg.inds)*100
+print(false.pos)
+```
+
+*(i) What is the overall misclassification error of your final filter and what is the percentage of good emails and spam emails that were misclassified respectively?*
+Misclassification: `r misclassification.error`
+Spam emails misclassified: `r false.negs`
+Good emails misclassified: `r false.pos`
 
 *(ii) What are the important variables in discriminating good emails from spam for your spamfilter?*
 
-*(iii) Using the interpreting tools provided by gbm, describe the dependence of the responseon the most important attributes.*
+*(iii) Using the interpreting tools provided by gbm, describe the dependence of the response on the most important attributes.*
 
 # Problem 7:
-**(15)Regression: California Housing.The data setcalif_stats315B.csvconsists of aggregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described incalif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least**
+**(15)Regression: California Housing.The data setcalif_stats315B.csv consists of aggregated data from 20,640 California census blocks (from the 1990 census). The goal is to predictthe median house value in each neighborhood from the others described in calif_stats315B.txt.Fit a gbm model to the data and write a short report that shouldincludeat least**
 
 ```{r}
 
@@ -174,7 +241,7 @@ summary(gbm.age)
 ```
 
 
-**(15) Regression: Marketing data.The data setage_stats315B.csvwas already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
+**(15) Regression: Marketing data.The data setage_stats315B.csv was already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
 
 **(a) Fit a gbm model for predicting age form the other demographic attributes and compare the accuracy with the accuracy of your best single tree from Homework 1.**
 
@@ -200,19 +267,32 @@ test_ind <- seq(1,nrow(occup))[!(seq(1,nrow(occup)) %in% train_ind)]
 
 ### CURRENT THINKING: Make a matrix, store the predicted probabilities for each class, predicting on dummy encodings, then determine the prediction based on which category has the highest probability, calculate accuracy. Not sure how to decide which are the most important variables.... maybe there's some consensus about which are most important for most classes?
 
-for (i in 1:9) {
- 
-    occup$dummy <- (occup$Occup == i)
-    gbm.occup <- gbm(dummy ~ ., data=occup[train_ind,-1], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="bernoulli", verbose=T)
-    gbm.predict <- predict(gbm.occup, type="response", occup[test_ind,c(-1,-15)])
-   
-}
+#for (i in 1:9) {
+#    occup$dummy <- (occup$Occup == i)
+#    gbm.occup <- gbm(dummy ~ ., data=occup[train_ind,-1], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, #distribution="bernoulli", verbose=T)
+#    gbm.predict <- predict(gbm.occup, type="response", occup[test_ind,c(-1,-15)])
+#}
 
+gbm.occup <- gbm(Occup ~ ., data= occup[train_ind,], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="multinomial", verbose=T)
+gbm.perf(gbm.occup, method="cv")
+
+gbm.predict <- predict(gbm.occup, occup[test_ind,-1], type = "response")
+predict_probs <- matrix(unlist(gbm.predict), ncol = 9, byrow = F) #n by classes
+
+class_preds <- apply(predict_probs, 1, function(probs) return(which(probs == max(probs))))
+true_class <- occup[test_ind, 1]
+
+
+misclassification.error <- sum(class_preds != true_class) / length(true_class) * 100
+misclass_perclass <- data.frame(1:9)
+misclass_perclass$error <- sapply(1:9, function(i) return( sum(class_preds[true_class == i] != i) / sum(true_class == i))) * 100
 
 ```
 
-**(15) Multiclass classification: marketing data.The data setoccup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributescan be found inoccup_stats315B.txt. The goal in this problem is to fit a gbm model to predictthe type of occupation from the 13 other demographic variables.**
+**(15) Multiclass classification: marketing data.The data set occup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributes can be found in occup_stats315B.txt. The goal in this problem is to fit a gbm model to predict the type of occupation from the 13 other demographic variables.**
 
 **(a) Report the test set misclassification error for gbm on thedata set, and also the misclas-sification errorfor each class.**
+Misclassification error: `r misclassification.error`
+
 
 **(b) Identify the most important variables.**
