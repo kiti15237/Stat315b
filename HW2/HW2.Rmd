@@ -42,22 +42,7 @@ In the boosting context, the "predictor variables" for our linear regression are
 # Problem 3:
 **(15) Assume squared error loss. Show that the convex members of the power family of penalties, except for the lasso, have the property that solutions for $\lambda > 0$ have nonzero values for all coefficients at each path point.**
 
-Consider the objective function, $\hat{R}(\vec{a}) + \lambda P(\vec{a}).$ To simplify notation, we will assume that $x_{i0} = 1$ for each observation $i$ to account for the intercept term. The derivative of the objective function with respect to some arbitrary coefficient $a_k$ is:
 
-$$\frac{\partial \hat{R}(\vec{a})}{\partial a_k} + \lambda\frac{\partial P(\vec{a})}{\partial a_k}$$
-
-Where
-
-$$\frac{\partial \hat{R}(\vec{a})}{\partial a_k} = \frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j= 0}^pa_jx_{ij} \right),$$
-and 
-$$\frac{\partial P(\vec{a})}{\partial a_k} = \gamma |a_k|^\gamma sign(a_k).$$
-(It is worth noting that  $P(\vec{a})$ is not necessarily differentiable at 0.)  
-
-When $\lambda = 0$, $\hat{a}_k$ is the least squares solution.  As $\lambda$ goes to 0, $\hat{a}_k$ also goes to 0. However, as $\hat{a}_k$ goes to zero, the derivative of the objective with respect to a_k approaches:
-
-$$\frac{2}{N}\sum_{i = 1}^Nx_{ik}\left(y_i - \sum_{j\neq k}^pa_jx_{ij} \right).$$  
-
-#####################################################
 3a. Power family produces dense solutions:
 
 We first consider the general minimum found by setting the derivative with respect to $a_j$ to 0.
