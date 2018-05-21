@@ -1,0 +1,396 @@
+---
+title: "STATS 315B - Homework 2"
+author: "Rachael Caelie (Rocky) Aikens, Christine Tataru, and Daniel Sosa"
+date: "May 14, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(rpart)
+library(gbm)
+```
+
+# Problem 1:
+**(10) Random forests predict with an ensemble of bagged trees each trained on a bootstrap sample randomly drawn from the original training data. Additional random variation among the trees is induced by choosing the variable for each split from a small randomly chosen subset of all of the predictor variables when building each tree. What are the advantages and disadvantages of this random variable selection strategy? How can one introduce additional tree variation in the forest without randomly selecting subsets of variables?**
+
+*Advantages:*  Without the random variable selection strategy, the trees from the bootstrapped samples are likely to be highly correllated: Since the input samples are very similar, the trees may tend to split on the same subset of highly correllated variables.  However, averaging a forest of near-identical trees adds little value when it comes to decreasing the variance of the overall classifier. The random variable selection strategy introduces variation among the trees by ensuring that they are not all splitting on the same sequence of variables. This breaks down the correllations between trees in the forest.
+
+*Disadvantages:* Suppose (as is very often the case), that many of the model variables are uninformative for prediction.  In this case, the random variable selection strategy is likely to generate many trees which have splits on relatively useless variables.
+
+Additional variation can be induced by:
+ - limiting the sample sizes from which each base learner is trained.
+ - during training, using random split points for each feature under consideration when constructing a split, rather than the optimal split point for each feature (as in the ExtraTrees approach).
+
+# Problem 2:
+**(5) Why is it necessary to use regularization in linear regression when the number of predictor variables is greater than the number of observations in the training sample? Explain how regularization helps in this case. Are there other situations where regularization might help? What is the potential disadvantage of introducing regularization? Why is sparsity a reasonable assumption in the boosting context. Is it always? If not, why not?**
+
+We showed in 315A that, when $n < p$, there is an infinite number of equally optimal solutions to the linear least squares problem.  In these cases, all of those optimal solutions are likely to be highly overfit to the training data.  Regularization helps us simplify the linear model we produce (decrease model variance), and allows us to select for models which are in line with our expectations (i.e. sparse ones) by adding a "prior" for our coefficients. This same logic applies when $n \geq p$, but $p$ is very large, and/or many of our variables are uninformative. 
+
+However, introducing regularization adds bias to our model: too much regularization can be just as bad for performance as too little.  At the extreme, putting infinite weight on the regularization in our model training results in a model with all coefficients equal to zero, which is useless.
+
+In the boosting context, the "predictor variables" for our linear regression are the results from all possible base learners.  However, almost all base learners are probably very poor predictors of the outcome; only a small subset of them are effective and should have nonzero weight.  This means we generally want a sparse model. This assumption might not hold true if we happened to be dealing with a small base learner function class in which nearly all models were effective predictors.  However, in practice, this nearly never happens.
+
+# Problem 3:
+**(15) Assume squared error loss. Show that the convex members of the power family of penalties, except for the lasso, have the property that solutions for $\lambda > 0$ have nonzero values for all coefficients at each path point.**
+
+
+3a. Power family produces dense solutions:
+
+We first consider the general minimum found by setting the derivative with respect to $a_j$ to 0.
+$$ \frac{d}{da_j} \hat{R}(a) + \lambda P(a) = \frac{d}{da_j} ((y - xa)^2 + \sum_{k}^K a_k^{\gamma}) = -2x_j(y - xa) + \gamma a_j^{\gamma - 1} = 0$$
+2) assume toward contradiction that a_j = 0
+$$  -2x_j(y - xa) = 0 $$
+3) Contradiction. The probability of $y - xa = 0$ is 0 for some continuous y. Therefore, the likelihood of $a_j$ being exactly equal to 0 is very low.
+
+3b: Elastic net produces sparse solutions:
+The elastic net takes the general form
+$$ (y-xa)^2 + \sum_{j=1}^n (\gamma - 1)a_j^2/2 + (2-\gamma)|a_j| $$
+
+We would like to take the derivative w.r.t $a_j$ as we did above, however, we cannot differentiate the absolute value. We therefore take directional derivatives. As before, we assume $a_j = 0$ and that $a_j$ is a minimum. For this to be true, the derivatives with respect to $a_j$ in every direction must be greater than 0
+
+Assume without loss of generality that we move in the cardinal direction $e_1 = [1, 0, 0,...]$
+$$D_{e_1} = \lim_{\epsilon \rightarrow 0} \frac{1}{\epsilon} [ R(a + \epsilon e_1) - R(a) + \lambda P(a + \epsilon e_{1}) - \lambda P(a)] $$
+
+As we can expressly take the derivative of the risk component, we can easily see:
+$$R(a + \epsilon e_j) - R(a) = 2 \epsilon e_1 x_j(y - x(a)) $$
+
+We then consider the penalty component 
+$$\lambda P(a_j + \epsilon e_1) - \lambda P(a_j) = \frac{\lambda}{2} (\gamma - 1) (a_j + \epsilon e_1)^2  + \lambda (2 - \gamma)|a_j + \epsilon e_1| -\frac{\lambda}{2}(\gamma - 1) a_j^2  - \lambda (2 - \gamma)|a_j| = $$
+
+We have assumed that $a_j = 0$
+$$ \lambda P(a_j + \epsilon e_1) - \lambda P(a_j) = \frac{\lambda }{2}(\gamma - 1) (\epsilon e_1)^2 + \lambda(2 - \gamma) |\epsilon e_1| $$
+Putting these components together, we mandate that the derivative must be greater than 0:
+$$2 \epsilon e_1 x_j(y - x(a)) +  \frac{\lambda}{2} (\gamma - 1) (\epsilon e_1)^2 + \lambda(2 - \gamma) |\epsilon e_1| > 0$$
+Simplifying, we find:
+ $$ x_j(y - x(a)) > - \frac{\lambda}{4} (\gamma - 1) \epsilon e_1 - \frac{\lambda}{2}(2 - \gamma) $$
+We then perform the same process moving in the cardinal direction $e_{-1} = [-1,0,0,...]$ and find:
+$$ x_j(y - x(a)) < - \frac{\lambda}{4} (\gamma - 1) \epsilon e_{-1} - \frac{\lambda}{2}(2 - \gamma) $$
+In contrast to the power family penalty, the elastic net penalty allows a range of values for the values of $(y - x(a))$. This range is parameterized by $\lambda$ adn $\gamma$. This means that the probability of any coefficient $a_j$ having a minimum of 0 for any $\lambda$ is much (infinitely?) higher than it was for the power family.
+
+
+# Problem 4:
+
+Let 
+$$\tilde{j} = argmin_{1 \leq j \leq J} \min_{\rho} E[(Y - \rho X_j)^2].$$
+We would like to show that $\tilde{j} = j^*$, as defined in the problem set-up. We'll start by finding a closed form expression for $\rho^*$:
+
+$$\rho^* = argmin_{\rho}E[(Y - \rho X_j)^2].$$
+
+For any $j$, we can apply the linearity of the expectation operator to expand $E[(Y - \rho X_j)^2]$ to:
+
+$$E[Y^2] - 2\rho E[YX_j] + \rho^2 E[X_j^2]$$
+
+Regardless of the distributions of $Y$ and $X_j$, the above expression is convex in $\rho$.  We can optimize this easily by differentiating with respect to $\rho$:
+
+$$\frac{\partial}{\partial \rho} E[(Y - \rho X_j)^2] = - 2 E[YX_j] + 2\rho E[X_j^2]$$
+Setting the derivative to zero and solving, we have:
+
+$$\rho^* = \frac{E[YX_j]}{E[X_j^2]}$$
+
+In fact, since $E[X_j^2] = 1$ for all $j$ we can ignore the denominator.  Thus $\rho^*$ is simply $E[YX_j]$.
+
+We can now write $\tilde{j}$ as:
+$$\tilde{j} = argmin_{1 \leq j \leq J} E[(Y - E[YX_j] X_j)^2].$$
+Applying the same properties of expectation as before, we can expand $E[(Y - \frac{E[YX_j]}{E[X_j^2]} X_j)^2]$ to:
+
+$$E[Y^2] - 2E[YX_j]^2 + E[YX_j]^2 E[X_j^2]$$
+Since $E[Y^2]$ does not depend on our choice of $j$ this term can be dropped.  Noting that $E[X_j^2] = 1$, we can write $\tilde{j}$ most simply as:
+
+$$\tilde{j} = argmin_{1 \leq j \leq J} -E[YX_j]^2.$$
+
+Now, we can see that this is the same value of $j$ that maximizes $|E[YX_j]|$.  Thus $\tilde{j} = j^*.$
+
+# Problem 5:
+
+The partial dependence of F(x) on $z_l$ can be expressed as the expectation of F(x) after integrating over all values $z_{/l}$
+$$E_{z /l}[F(x)] = \int F(x) f_{z /l}(t) dt$$
+Expanding F(x):
+$$\int F_l(z_l) f_{z/l}(t) dt + \int F_{z /l}(t) f_{z /l}(t) dt$$
+Simplifying, we find
+$$F_l(z_l) * 1 + \int F_{z /l}(t) f_{z /l}(t) dt$$
+It can be seen that the second term is a function integrated over it's entire domain, which will result in some constant c.
+$$E_{z /l}[F(x)]  =  F_l(z_l) + c$$
+We now consider the dependence of F(x) on $z_l$ ignoring the other variables
+
+$$E[F(x) | z_l] = \int F(x) f_{z/l | z_l}$$
+$$=  \int F_l(z_l)  f_{z/l | z_l}(t)dt + \int F_{/l}(t)f_{z/l | z_l}(t)dt$$
+$$F_l(z_l) * 1 + \int F_{/l}(t)f_{z/l | z_l}(t)dt$$
+Unlike in the previous case, the second term does NOT integrate to a constant, because the probability density $f_{z/l | z_l}(t)$ depends on the given value of $z_l$
+
+$$F_l(z_l) + \int F_{/l}(t)f_{z/l | z_l}(t)dt$$
+If the values of $z_{/l}$ are completely independent of $z_l$, the two methods will be identical.
+
+Conceptually, this expresses the idea that some subset of variables can be used to extract information about an objective based on their correlation with predictive variables. 
+
+# Problem 6: 
+**Binary classification: Spam Email. The dataset is a collection of 4601 emails of which 1813 were considered spam, i.e. unsolicited commercial email. The data set consists of 58 attributes of which 57 are continuous predictors and one is a
+class label that indicates whether the email was consideredspam (1) or not (0). Among the 57 predictor attributes are: percentage of the word "free" in the email, percentage of exclamationmarks in the email, etc. See file spam_stats315B_names.txt for the full list of attributes. The goal is, of course, to predict whether or not an email is "spam". This data set is used for illus-tration in the tutorial Boosting with R Programming. The data set spam_stats315B_train.csv represents a subsample of these emails randomly selected from spam_stats315B.csvto be usedfor training.  The file spam_stats315B_test.csv contains the remaining emails to be used for evaluating results.**
+
+**(a) Based on the training data, fit a gbm model for predicting whether or not an email is spam , following the example in the tutorial. What is your estimate of the misclassification rate?  Of all the spam emails of the test set what percentage was misclassified, and of all the non-spam emails in the test set what percentage was misclassified?**
+
+Below, we preprocess the data:
+
+```{r}
+spam_train <- read.csv("spam_stats315B_train.csv", header=F)
+spam_test <- read.csv("spam_stats315B_test.csv", header=F)
+rflabs<-c("make", "address", "all", "3d", "our", "over", "remove",
+  "internet","order", "mail", "receive", "will",
+  "people", "report", "addresses","free", "business",
+  "email", "you", "credit", "your", "font","000","money",
+  "hp", "hpl", "george", "650", "lab", "labs",
+  "telnet", "857", "data", "415", "85", "technology", "1999",
+  "parts","pm", "direct", "cs", "meeting", "original", "project",
+  "re","edu", "table", "conference", "semicolon", "left_bracket_round", "left_bracket_square", "exclaim", "dollar", "pound",
+  "CAPAVE", "CAPMAX", "CAPTOT","type")
+  # Names for predictors and response
+colnames(spam_train) <- colnames(spam_test) <- rflabs
+
+#normalize all columns by mean and variance
+train_type = spam_train$type
+spam_train <- data.frame(apply(select(spam_train, -type), 2, 
+                               function(vec) return((vec - mean(vec)) / sd(vec))))
+spam_train$type = train_type
+
+test_type = spam_test$type
+spam_test <- data.frame(apply(select(spam_test, -type), 2,
+                              function(vec) return((vec - mean(vec)) / sd(vec))))
+spam_test$type = test_type
+```
+
+Next, we write a function which performs 5 fold cross validation for various levels of shrinkage and tree depth, and reports the results:
+
+```{r}
+gbm_cv <- function(weights = NULL, depth = 6) {
+  # train gbm with 5 fold cv and return cv performance
+  gbm0 <- gbm(type ~ ., 
+              data=spam_train,
+              interaction.depth = depth, 
+              shrinkage = 0.01, 
+              n.trees= 4000,
+              bag.fraction=0.7,
+              cv.folds=5,
+              distribution="bernoulli", verbose=F)
+  
+  best_iter <- gbm.perf(gbm0, method="cv")
+  cv_error <- gbm0$cv.error[best_iter]
+  
+  return(c(cv_error = cv_error, best_iter = best_iter))
+}
+```
+
+Using this function, we perform cross-validation to select the interaction depth for our model.
+
+```{r, eval=FALSE}
+# This code is computationally intensive; we do not run it on compile
+depths <- 1:6
+
+cv_results <- lapply(depths, function(depth) gbm_cv(depth = depth))
+```
+
+From this procedure, we find that the optimal interaction depth in cross validation is 1.
+
+```{r}
+# train best unweighted model
+best_depth <- 1
+best_iter <- 4000
+gbm_unweighted <- gbm(type ~ ., 
+                      data=spam_train,
+                      interaction.depth = best_depth, 
+                      shrinkage = 0.01, 
+                      n.trees= best_iter,
+                      bag.fraction=0.7,
+                      distribution="bernoulli", verbose=F)
+```
+
+Now, we can analyze the performance of our model on the test set.
+
+```{r}
+gbm_unweighted.test <- predict(gbm_unweighted, spam_test, type="response", n.trees= best_iter)
+gbm_unweighted.labels <- as.numeric(gbm_unweighted.test >= 0.5)
+misclassification.error <- sum(spam_test$type != gbm_unweighted.labels) / nrow(spam_test)*100
+  
+test.pos.inds <- which(spam_test$type == 1)
+test.neg.inds <- which(spam_test$type == 0)
+false.negs <- sum(spam_test[test.pos.inds,]$type != gbm_unweighted.labels[test.pos.inds]) / length(test.pos.inds)*100
+false.pos <- sum(spam_test[test.neg.inds,]$type != gbm_unweighted.labels[test.neg.inds]) / length(test.neg.inds)*100
+```
+
+The performance statistics below were calculated for our best unweighted gbm model on the hold-out test set.
+
+Misclassification error: `r misclassification.error `
+Spam misclassified as non-spam (false neg): `r false.negs`
+Non-spam misclassified as spam (false pos): `r false.pos`
+
+**(b) Your classifier in part (a) can be used as a spam filter. One of the possible disadvantages of such a spam filter is that it might filter out too many good (non-spam) emails. Therefore, a better spam filter might be the one that penalizes misclassifying non-spam emails more heavily than the spam ones. Suppose that you want to build a spam filter that throws out no more that 0.3% of the good (non-spam) emails. You have to find and use a cost matrix that penalizes misclassifying good emails as spam more than misclassifying spam emails as good by the method of trial and error. Once you have constructed your final spam filter with the property described above, answer the following questions:**
+
+```{r}
+weights = ifelse(spam_train$type == 0, 100, 3)
+
+gbm_weighted <- gbm(type ~ ., 
+                      data=spam_train,
+                      weights = weights,
+                      interaction.depth = best_depth, 
+                      shrinkage = 0.01, 
+                      n.trees= best_iter,
+                      bag.fraction=0.7,
+                      distribution="bernoulli", verbose=F)
+
+gbm_weighted.test <- predict(gbm_weighted, spam_test, type="response", n.trees= best_iter)
+gbm_weighted.labels <- as.numeric(gbm_weighted.test >= 0.5)
+w.misclassification.error <- sum(spam_test$type != gbm_weighted.labels) / nrow(spam_test)*100
+  
+w.false.negs <- sum(spam_test[test.pos.inds,]$type != gbm_weighted.labels[test.pos.inds]) / length(test.pos.inds)*100
+w.false.pos <- sum(spam_test[test.neg.inds,]$type != gbm_weighted.labels[test.neg.inds]) / length(test.neg.inds)*100
+```
+
+*(i) What is the overall misclassification error of your final filter and what is the percentage of good emails and spam emails that were misclassified respectively?*
+
+The performance statistics below were calculated for our best unweighted gbm model on the hold-out test set.  Clearly, the false negative rate is much higher as a tradeoff with our low false positive rate.
+
+Misclassification: `r w.misclassification.error`
+Spam emails misclassified: `r w.false.negs`
+Good emails misclassified: `r w.false.pos`
+
+*(ii) What are the important variables in discriminating good emails from spam for your spamfilter?*
+
+```{r} 
+summary(gbm_weighted, main="RELATIVE INFLUENCE OF ALL PREDICTORS")
+```
+
+Using the built-in variable importance evaluator from the gbm package, we find that the most important variables are presence of the words "remove," "money", "000", "credit", and "free", and the number of exclaimation points and dollar signs.  This makes logical sense based on the words and characters we tend to see in spam emails as opposed to others.
+
+*(iii) Using the interpreting tools provided by gbm, describe the dependence of the response on the most important attributes.*
+
+```{r}
+plot(gbm_weighted, i="remove") 
+plot(gbm_weighted, i = "X000")
+plot(gbm_weighted, i = "money")
+plot(gbm_weighted, i = "dollar")
+```
+
+As might be expected, the number of exclamation points and dollar signs in a text are among the top features used in classifying it as spam/non-spam. Interestingly, the number of times the word "remove" appears in the test is also useful. (One can imagine, for example, that many spam emails include a tag line to "remove yourself from this mailing list.") All the variables show an upwards trend, suggesting that higher frequencies of these features results in a higher spam score. 
+
+However, the number of characters or words tends to be important. For example, we can see that the presence of a single dollar sign does not significantly increase the probability that an email will be classified as spam.  However, the presence of several dollar signs corresponds to a much higher rate of "spam" labeling. Thus, a moderate number of "spammy" word or character occurances (normalized by mean and variance of occurences throughout the dataset) will not necessarily "incriminate" an email as a spam email, but several instances of a "spammy" word is highly penalized.
+
+# Problem 7:
+**(15) Regression: California Housing.The data set calif_stats315B.csv consists of aggregated data from 20,640 California census blocks (from the 1990 census). The goal is to predict the median house value in each neighborhood from the others described in calif_stats315B.txt. Fit a gbm model to the data and write a short report that should include at least**
+
+```{r}
+calif <- read.csv("calif_stats315B.csv", header=F)
+colnames(calif) <- c("Value", "Income", "Age", "Rooms", "Bedrooms", "Population", "Occupancy", "Latitude", "Longitude")
+
+gbm.calif <- gbm(Value ~ ., data=calif, train.fraction=0.8, interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="gaussian", verbose=T)
+gbm.predict <- predict(gbm.calif, calif[-1])
+gbm.perf(gbm.calif, method="cv")
+
+(MSE <- sum((gbm.predict - calif$Value)**2))
+
+summary(gbm.calif, main="RELATIVE INFLUENCE OF ALL PREDICTORS")
+
+plot(gbm.calif, c(1,6))
+plot(gbm.calif, c(1,7))
+plot(gbm.calif, c(1,8))
+plot(gbm.calif, c(6,7))
+plot(gbm.calif, c(6,8))
+plot(gbm.calif, c(7,8))
+```
+
+**(a) The prediction accuracy of gbm on the data set.**
+
+Mean squared error is 4424.596
+
+**(b) Identification of the most important variables.**
+
+In order: Income, Occupancy, Longitude, Latitude, Age, Rooms, Population, Bedrooms.
+
+**(c) Comments on the dependence of the response on the most important variables (you may want to consider partial dependence plots (plot) on single and pairs of variables, etc.).**
+
+For potential interactions, we only considered Income, Occupancy, Longitude, and Latitude. Occupancy has no noticable interactions with any of the other 3 big variables. However, all 3 other important variables exhibit a good deal of interaction with one another as shown by the partial dependence plots.
+
+# Problem 8:
+
+**(15) Regression: Marketing data.The data setage_stats315B.csv was already usedin Homework 1. Reviewage_stats315B.txtfor the information about order of attributes etc.**
+
+```{r}
+
+age <- read.csv("age_stats315B.csv", header=T)
+factor_columns <- c(2,3,4,5,9,12,13,14)
+ordered_columns <- c(1,6,7,8,10,11)
+age[, factor_columns] <- lapply(age[factor_columns], as.factor)
+age[, ordered_columns] <- lapply(age[ordered_columns], as.ordered)
+
+train_ind <- sample(1:nrow(age), size = nrow(age) * .8)
+test_ind <- seq(1,nrow(age))[!(seq(1,nrow(age)) %in% train_ind)]
+
+gbm.age <- gbm(age ~ ., data=age[train_ind,], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="gaussian", verbose=T)
+gbm.perf(gbm.age, method="cv")
+
+gbm.predict <- predict(gbm.age, age[test_ind,-1])
+(acc <- sum(round(gbm.predict) == age[test_ind,]$age)/length(test_ind) )
+
+model <- rpart(age ~ ., data = age[train_ind,])
+rpart.pred <- predict(model, age[test_ind,-1])
+(acc_rpart <- sum(round(rpart.pred) == age[test_ind,]$age)/length(test_ind) )
+
+summary(gbm.age)
+
+```
+
+**(a) Fit a gbm model for predicting age form the other demographic attributes and compare the accuracy with the accuracy of your best single tree from Homework 1.**
+
+The accuracy is much higher using GBM (54% as compared to 9.7% of getting the exact age class right)
+
+**(b) Identify the most important variables.**
+
+The most important are in order: MarStat, Occup, HouseStat, Edu, Persons, Ethnic, Income, Under18, LiveBA, DualInc, TypeHome, Lang, Sex. Marital status and occupation are clearly the most important variables.
+
+# Problem 9.
+
+**(15) Multiclass classification: marketing data.The data set occup_stats315B.csvcomes from the same marketing database used in Homework 1. The description of the attributes can be found in occup_stats315B.txt. The goal in this problem is to fit a gbm model to predict the type of occupation from the 13 other demographic variables.**
+
+```{r}
+occup <- read.csv("occup_stats315B.csv", header=F)
+colnames(occup) <- c("Occup", "TypeHome", "sex", "MarStat", "age", "Edu", "Income", "LiveBA", "DualInc", "Persons", "Under18", "HouseStat", "Ethnic", "Lang" )
+factor_columns <- c(1,2,3,4,9,12,13,14)
+ordered_columns <- c(5,6,7,8,10,11)
+occup[, factor_columns] <- lapply(occup[factor_columns], as.factor)
+occup[, ordered_columns] <- lapply(occup[ordered_columns], as.ordered)
+
+train_ind <- sample(1:nrow(occup), size = nrow(occup) * .8)
+test_ind <- seq(1,nrow(occup))[!(seq(1,nrow(occup)) %in% train_ind)]
+
+gbm.occup <- gbm(Occup ~ ., data= occup[train_ind,], interaction.depth=4, shrinkage = 0.05, n.trees=2500, bag.fraction=0.5, cv.folds=5, distribution="multinomial", verbose=T)
+best_iter = gbm.perf(gbm.occup, method="cv")
+
+gbm.predict <- predict(gbm.occup, occup[test_ind,-1], type = "response", n.trees = best_iter)
+predict_probs <- matrix(unlist(gbm.predict), ncol = 9, byrow = F) #n by classes
+
+class_preds <- apply(predict_probs, 1, function(probs) return(which(probs == max(probs))))
+true_class <- occup[test_ind, 1]
+
+
+misclassification.error <- sum(class_preds != true_class) / length(true_class) * 100
+misclass_perclass <- data.frame(1:9)
+misclass_perclass$error <- sapply(1:9, function(i) return( sum(class_preds[true_class == i] != i) / sum(true_class == i))) * 100
+```
+
+**(a) Report the test set misclassification error for gbm on the data set, and also the misclassification error for each class.**
+
+Misclassification error: `r misclassification.error`
+
+```{r}
+print(misclass_perclass)
+```
+
+
+**(b) Identify the most important variables.**
+```{r}
+imp <- summary(gbm.occup)
+print(imp[1:5, ])
+```

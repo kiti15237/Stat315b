@@ -1,0 +1,8 @@
+base
+ggplot2
+dplyr
+knitr
+rpart
+survival
+lattice
+gbm
