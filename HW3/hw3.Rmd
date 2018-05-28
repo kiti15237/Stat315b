@@ -22,7 +22,7 @@ library(ggplot2)
 
 \begin{align}
 \frac{\partial\hat{F}}{\partial a_m} &= B(\textbf{x}|\mu_m, \sigma_m) \\
-\frac{\partial\hat{F}}{\partial \sigma_m} &= \Sigma_{m=1}^M (\frac{1}{ \sigma_m^3}\Sigma_{j=1}^n(x_j-\mu_{jm})^2)B(\textbf{x}|\mu_m, \sigma_m) \\ \frac{\partial\hat{F}}{\partial \sigma_m} &= \Sigma_{m=1}^M (\frac{1}{ \sigma_m^2}\Sigma_{j=1}^n(x_j-\mu_{jm}))B(\textbf{x}|\mu_m, \sigma_m) 
+\frac{\partial\hat{F}}{\partial \sigma_m} &= \Sigma_{m=1}^M a_m (\frac{1}{ \sigma_m^3}\Sigma_{j=1}^n(x_j-\mu_{jm})^2)B(\textbf{x}|\mu_m, \sigma_m) \\ \frac{\partial\hat{F}}{\partial \mu_{mj}} &= \Sigma_{m=1}^M (\frac{a_m}{ \sigma_m^2}(x_j-\mu_{jm}))B(\textbf{x}|\mu_m, \sigma_m) 
 \end{align}
 
 # Problem 3
