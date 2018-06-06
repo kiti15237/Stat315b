@@ -2,8 +2,8 @@
 title: "Stats 315B Homework"
 author: "Rachael Caelie (Rocky) Aikens, Daniel Sosa, Christine Tataru"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -67,9 +67,16 @@ $\{w_{ij}^{(l)} \leftarrow w_{ij} -\eta g(w_{ij}^{(l)})\text{ for each } j = 1..
 
 # Problem 2
 
+I think G(x) is meant to represent the gradient of the squared error loss, so we have to include the chain rule? Added below your work, just in case it's not correct
 \begin{align}
 \frac{\partial\hat{F}}{\partial a_m} &= B(\textbf{x}|\mu_m, \sigma_m) \\
 \frac{\partial\hat{F}}{\partial \sigma_m} &= \Sigma_{m=1}^M a_m (\frac{1}{ \sigma_m^3}\Sigma_{j=1}^n(x_j-\mu_{jm})^2)B(\textbf{x}|\mu_m, \sigma_m) \\ \frac{\partial\hat{F}}{\partial \mu_{mj}} &= \Sigma_{m=1}^M (\frac{a_m}{ \sigma_m^2}(x_j-\mu_{jm}))B(\textbf{x}|\mu_m, \sigma_m) 
+\end{align}
+
+\begin{align}
+\frac{\partial\hat{F}}{\partial a_m} &= 2 (y - \sum_{m=1}^M a_m B(\textbf{x}|\mu_m, \sigma_m)) B(\textbf{x}|\mu_m, \sigma_m) \\
+\frac{\partial\hat{F}}{\partial \sigma_m} &=  2 (y - \sum_{m=1}^M a_m B(\textbf{x}|\mu_m, \sigma_m)) \Sigma_{m=1}^M - a_m (\frac{1}{ \sigma_m^3}\Sigma_{j=1}^n(x_j-\mu_{jm})^2)B(\textbf{x}|\mu_m, \sigma_m)
+\frac{\partial\hat{F}}{\partial \mu_{mj}} &= 2 (y - \sum_{m=1}^M a_m B(\textbf{x}|\mu_m, \sigma_m))  \Sigma_{m=1}^M (\frac{a_m}{ \sigma_m^2}\sum_{j=1(}^n x_j-\mu_{jm}))B(\textbf{x}|\mu_m, \sigma_m) 
 \end{align}
 
 # Problem 3
@@ -135,7 +142,7 @@ Training separate neural nets might make sense when the $y_m$'s are dependent on
 
 # Problem 7 
 
-```{r,eval = F}
+```{r,eval = T}
 library(dplyr)
 spam_train <- read.csv("spam_stats315B_train.csv", header=F)
 spam_test <- read.csv("spam_stats315B_test.csv", header=F)
@@ -178,7 +185,7 @@ find_opt_hidden_units <- function(minimize_false_pos = F){
   #train all nets
   nets = list()
   for(num_units in 1:10){
-    net = nnet(type ~ ., data = spam_train, size = num_units, trace = F, rang = 0.5, maxit = 100) #weights are randomly initialized by default
+    net = nnet(type ~ ., data = spam_train, size = num_units, trace = F, rang = 0.5, maxit = 500) #weights are randomly initialized by default
     nets[[paste("h", num_units, sep = "")]] = net
   }
   
@@ -230,7 +237,7 @@ limit_false_pos <- function(false_pos_limit = .01, class_probs, good_emails, y){
 
 ```
 which structural model performs best at classifying on the test set?
-```{r, eval = F}
+```{r, eval = T}
 set.seed(0)
 tmp <- find_opt_hidden_units(minimize_false_pos = F)
 opt_hidden_units <- tmp[[1]]
@@ -248,7 +255,7 @@ find_opt_decay_rate <- function(opt_hidden_units, minimize_false_pos = F){
   for(decay in seq(0,1, by = 0.1)){
     errors_tmp <- c()
     for(i in 1:10){
-       net = nnet(type ~ ., data = spam_train, size = opt_hidden_units, decay = decay, trace = F, rang = 0.5, maxit = 100)
+       net = nnet(type ~ ., data = spam_train, size = opt_hidden_units, decay = decay, trace = F, rang = 0.5, maxit = 500)
        class_probs <- predict(net, select(spam_test, -type), type = "raw")
 
        if(minimize_false_pos == T){
@@ -270,7 +277,7 @@ find_opt_decay_rate <- function(opt_hidden_units, minimize_false_pos = F){
 }
 ```
 
-```{r eval=F}
+```{r eval = T}
 tmp <- find_opt_decay_rate(opt_hidden_units, minimize_false_pos = F)
 opt_decay <- tmp[[1]]
 min_error <- tmp[[2]]
@@ -283,7 +290,7 @@ Describe your final best model obtained from the tuning process: number of hidde
 
 
 c) The goal is now to obtain a spam filter. Repeat the previous point requiring this time the proportion of misclassified good emails to be less than 1%.
-```{r false_pos_limited, eval = F}
+```{r false_pos_limited, eval = T}
 
 #opt_hidden_units <- find_opt_hidden_units(minimize_false_pos = T)
 #print(paste("Optimal number of hidden units: ", opt_hidden_units))
