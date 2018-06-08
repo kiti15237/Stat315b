@@ -98,10 +98,7 @@ Letting $\Sigma^{1/2}x = \tilde{x}$ and $\Sigma^{1/2}\mu_m = \tilde{\mu},$ we re
 
 # Problem 4
 
-For the elliptical radial basis function to vary only in one direction, $\Sigma$ must be some matrix so that $B(x|\mu_m, \Sigma)$ is proportional to some univariate normal p.d.f.. This requires that $\Sigma$ must be rank 1. If we require that $\Sigma$ is restricted to the set of symmetric matrices (this not explicit in the problem statement but is necessary to maintain the analogy to the gaussian p.d.f.), this is simply the set of all $p \times p$ matrices with a single nonzero diagonal entry and all other entries equal to zero.
-
-
-
+We wish to find all symmetric matrices $\Sigma$ such that there exists some orthogonal basis $\{v_1....v_p\}$, so that $B(x + v | \mu_m, \Sigma) = $B(x|\mu_m, \Sigma)$ for all $v_j$ except one.  This is what it means to vary only in one direction.  Notice that $(x+v-\mu)^T\Sigma(x+v-\mu)$ (and, by extension  $B(x + v | \mu_m, \Sigma)$, is invariant to $v$ whenever $v$ is in the nullity of $\Sigma$.  For $\Sigma$ to vary in only one direction, then, it must have nullity $p-1$ and rank $1$.  Thus, $B(x|\mu_m, \Sigma)$ varies in only one direction whenever $\Sigma$ is in the set of symmetric, rank 1 matrices. This makes sense, because then $B(x|\mu_m, \Sigma)$ is proportional to some univariate normal p.d.f..
 
 # Problem 5
 
